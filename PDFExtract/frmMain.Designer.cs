@@ -40,6 +40,15 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.nudLineSPacing = new System.Windows.Forms.NumericUpDown();
+            this.regexDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.resultDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.raiseListChangedEventsDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.allowNewDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.allowEditDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.allowRemoveDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.countDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cRegex = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cResult = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.menuStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
@@ -81,7 +90,7 @@
             this.tableLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanel1.ColumnCount = 4;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel1.Controls.Add(this.richTextBox1, 0, 0);
@@ -104,7 +113,8 @@
             this.richTextBox1.Location = new System.Drawing.Point(4, 4);
             this.richTextBox1.Margin = new System.Windows.Forms.Padding(4);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(678, 590);
+            this.richTextBox1.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.richTextBox1.Size = new System.Drawing.Size(678, 400);
             this.richTextBox1.TabIndex = 0;
             this.richTextBox1.Text = "";
             this.richTextBox1.SelectionChanged += new System.EventHandler(this.richTextBox1_SelectionChanged);
@@ -125,23 +135,27 @@
             // dataGridView1
             // 
             this.dataGridView1.AutoGenerateColumns = false;
+            this.dataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.cRegex,
+            this.cResult});
+            this.tableLayoutPanel1.SetColumnSpan(this.dataGridView1, 2);
             this.dataGridView1.DataSource = this.bindingSource1;
-            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridView1.Location = new System.Drawing.Point(3, 601);
+            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Left;
+            this.dataGridView1.Location = new System.Drawing.Point(3, 411);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowTemplate.Height = 24;
-            this.dataGridView1.Size = new System.Drawing.Size(240, 150);
+            this.dataGridView1.Size = new System.Drawing.Size(653, 219);
             this.dataGridView1.TabIndex = 3;
-            this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
+             this.dataGridView1.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellEndEdit);
             this.dataGridView1.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.dataGridView1_DataBindingComplete);
             // 
             // bindingSource1
             // 
             this.bindingSource1.DataSource = typeof(PDFExtract.Data);
             this.bindingSource1.BindingComplete += new System.Windows.Forms.BindingCompleteEventHandler(this.bindingSource1_BindingComplete);
-            this.bindingSource1.CurrentChanged += new System.EventHandler(this.bindingSource1_CurrentChanged);
-            this.bindingSource1.ListChanged += new System.ComponentModel.ListChangedEventHandler(this.bindingSource1_ListChanged);
+             this.bindingSource1.ListChanged += new System.ComponentModel.ListChangedEventHandler(this.bindingSource1_ListChanged);
             // 
             // openFileDialog1
             // 
@@ -187,6 +201,76 @@
             0});
             this.nudLineSPacing.ValueChanged += new System.EventHandler(this.nudLineSPacing_ValueChanged);
             // 
+            // regexDataGridViewTextBoxColumn
+            // 
+            this.regexDataGridViewTextBoxColumn.DataPropertyName = "Regex";
+            this.regexDataGridViewTextBoxColumn.HeaderText = "Regex";
+            this.regexDataGridViewTextBoxColumn.Name = "regexDataGridViewTextBoxColumn";
+            this.regexDataGridViewTextBoxColumn.Width = 77;
+            // 
+            // resultDataGridViewTextBoxColumn
+            // 
+            this.resultDataGridViewTextBoxColumn.DataPropertyName = "Result";
+            this.resultDataGridViewTextBoxColumn.HeaderText = "Result";
+            this.resultDataGridViewTextBoxColumn.Name = "resultDataGridViewTextBoxColumn";
+            this.resultDataGridViewTextBoxColumn.Width = 77;
+            // 
+            // raiseListChangedEventsDataGridViewCheckBoxColumn
+            // 
+            this.raiseListChangedEventsDataGridViewCheckBoxColumn.DataPropertyName = "RaiseListChangedEvents";
+            this.raiseListChangedEventsDataGridViewCheckBoxColumn.HeaderText = "RaiseListChangedEvents";
+            this.raiseListChangedEventsDataGridViewCheckBoxColumn.Name = "raiseListChangedEventsDataGridViewCheckBoxColumn";
+            this.raiseListChangedEventsDataGridViewCheckBoxColumn.Width = 172;
+            // 
+            // allowNewDataGridViewCheckBoxColumn
+            // 
+            this.allowNewDataGridViewCheckBoxColumn.DataPropertyName = "AllowNew";
+            this.allowNewDataGridViewCheckBoxColumn.HeaderText = "AllowNew";
+            this.allowNewDataGridViewCheckBoxColumn.Name = "allowNewDataGridViewCheckBoxColumn";
+            this.allowNewDataGridViewCheckBoxColumn.Width = 73;
+            // 
+            // allowEditDataGridViewCheckBoxColumn
+            // 
+            this.allowEditDataGridViewCheckBoxColumn.DataPropertyName = "AllowEdit";
+            this.allowEditDataGridViewCheckBoxColumn.HeaderText = "AllowEdit";
+            this.allowEditDataGridViewCheckBoxColumn.Name = "allowEditDataGridViewCheckBoxColumn";
+            this.allowEditDataGridViewCheckBoxColumn.Width = 70;
+            // 
+            // allowRemoveDataGridViewCheckBoxColumn
+            // 
+            this.allowRemoveDataGridViewCheckBoxColumn.DataPropertyName = "AllowRemove";
+            this.allowRemoveDataGridViewCheckBoxColumn.HeaderText = "AllowRemove";
+            this.allowRemoveDataGridViewCheckBoxColumn.Name = "allowRemoveDataGridViewCheckBoxColumn";
+            this.allowRemoveDataGridViewCheckBoxColumn.Width = 98;
+            // 
+            // countDataGridViewTextBoxColumn
+            // 
+            this.countDataGridViewTextBoxColumn.DataPropertyName = "Count";
+            this.countDataGridViewTextBoxColumn.HeaderText = "Count";
+            this.countDataGridViewTextBoxColumn.Name = "countDataGridViewTextBoxColumn";
+            this.countDataGridViewTextBoxColumn.ReadOnly = true;
+            this.countDataGridViewTextBoxColumn.Width = 74;
+            // 
+            // cRegex
+            // 
+            this.cRegex.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
+            this.cRegex.DataPropertyName = "Regex";
+            this.cRegex.FillWeight = 30F;
+            this.cRegex.HeaderText = "RegEx";
+            this.cRegex.MinimumWidth = 200;
+            this.cRegex.Name = "cRegex";
+            this.cRegex.Width = 200;
+            // 
+            // cResult
+            // 
+            this.cResult.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
+            this.cResult.DataPropertyName = "Result";
+            this.cResult.FillWeight = 70F;
+            this.cResult.HeaderText = "Result";
+            this.cResult.MinimumWidth = 400;
+            this.cResult.Name = "cResult";
+            this.cResult.Width = 400;
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -227,6 +311,15 @@
         private System.Windows.Forms.NumericUpDown nudLineSPacing;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.BindingSource bindingSource1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn regexDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn resultDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn raiseListChangedEventsDataGridViewCheckBoxColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn allowNewDataGridViewCheckBoxColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn allowEditDataGridViewCheckBoxColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn allowRemoveDataGridViewCheckBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn countDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn cRegex;
+        private System.Windows.Forms.DataGridViewTextBoxColumn cResult;
     }
 }
 

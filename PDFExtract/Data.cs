@@ -2,31 +2,55 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace PDFExtract
 {
-    public class Data 
+    public class Data : BindingList<Data>
     {
-        public struct sData
+        private string regex;
+        private string result;
+
+        public string Regex
         {
-            public string regex;
-            public string result;
- 
-            public sData(string regex,string result) 
+            get
             {
-                this.regex = regex;
-                this.result = result;
+                return regex;
             }
-        };
 
-        public BindingList<sData> blData = new BindingList<sData>();
+            set
+            {
+                Trace.WriteLine("Set Regex to " + value, "DATA");
+                regex = value;
+            }
+        }
 
-         public Data()
+        public string Result
         {
-            blData.Add(new sData("test", "Hallo"));
+            get
+            {
+                return result;
+            }
+
+            set
+            {
+                Trace.WriteLine("Set Result to " + value, "DATA");
+                result = value;
+            }
+        }
+
+        public Data(string regex, string result)
+        {
+            this.Regex = regex;
+            this.Result = result;
+        }
+
+
+        public Data()
+        {
+            Trace.WriteLine("Construct", "DATA");
+            regex = "";
+            result = "";
         }
 
     }
