@@ -11,7 +11,6 @@ using System.Diagnostics;
 
 namespace PDFExtract    
 {
- 
     class ExtractPDF
     {
         string text;
@@ -19,16 +18,30 @@ namespace PDFExtract
         float linespacing = 1f;
         bool bSpacingChanged = false;
         Dictionary<string, string> dTexte = new Dictionary<string, string>();
+
+
         public ExtractPDF()
         {
 
         }
-        public string  getText(string filename)
+        public bool getText(string[] filenames)
         {
-            if ( !bSpacingChanged && dTexte.ContainsKey(filename) )
+            bool rc = true;
+            foreach(string file in filenames)
+            {
+                if (getText(file) == false) return false;
+            }
+            return rc;
+        }
+
+
+        public bool  getText(string filename)
+        {
+            bool rc = true;
+            if ( !bSpacingChanged && DTexte1.ContainsKey(filename) )
             {
                 Trace.WriteLine("Schon gelesen", "PDF");
-                return dTexte[filename];
+                return rc;
             }
             else
             {
@@ -38,22 +51,22 @@ namespace PDFExtract
                     
                         Trace.WriteLine(filename + "\tspacing = " + spacing + "\tlinespacing = " + linespacing, "PDF");
                         string text = PdfTextExtractor.GetTextFromPage(pr, 1, new snSimpleTextExtractionStrategy(linespacing,spacing));
-                        if (dTexte.ContainsKey(filename))
+                        if (DTexte1.ContainsKey(filename))
                         {
-                            dTexte[filename] = text;
+                            DTexte1[filename] = text;
                         }
                         else {
-                            dTexte.Add(filename,text);
+                            DTexte1.Add(filename,text);
                         }
                         bSpacingChanged = false;
-                        return dTexte[filename];
+                        return true;
                     }
                }
                 catch (iTextSharp.text.exceptions.InvalidPdfException inv)
                 {
                     Trace.WriteLine(inv.Message ,"WARNING");
                     Trace.WriteLine("Go further");
-                    return "";
+                    return false;
                 }
                 catch ( Exception e)
                 {
@@ -62,7 +75,6 @@ namespace PDFExtract
                     throw e;
                 }
             }
-
         }
 
         internal void SetSpacing(decimal value)
@@ -102,6 +114,19 @@ namespace PDFExtract
             get
             {
 
+                return DTexte1;
+            }
+
+            set
+            {
+                DTexte1 = value;
+            }
+        }
+
+        public Dictionary<string, string> DTexte1
+        {
+            get
+            {
                 return dTexte;
             }
 
