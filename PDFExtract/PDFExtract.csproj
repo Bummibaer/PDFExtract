@@ -52,6 +52,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data.cs" />
+    <Compile Include="DoWork.cs" />
+    <Compile Include="ExecuteProcess.cs" />
+    <Compile Include="ExtractWertpapiere.cs" />
+    <Compile Include="FindFiles.cs" />
     <Compile Include="TemplateRegEx.cs" />
     <Compile Include="ExtractPDF.cs" />
     <Compile Include="frmMain.cs">
@@ -96,6 +100,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Icon1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bin\Debug\rules.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

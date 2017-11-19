@@ -27,6 +27,8 @@ namespace PDFExtract
         private List<TemplateRegEx> lRegEx = new List<TemplateRegEx>();
         private List<Data> lData = new List<Data>();
 
+        DoWork dw = new DoWork();
+
         public frmMain()
         {
             InitializeComponent();
@@ -39,14 +41,10 @@ namespace PDFExtract
                 LRegEx.AddRange(((List<TemplateRegEx>)xmlSerializer.Deserialize(new StreamReader(Properties.Settings.Default.RegExData))));
 
             }
-            AddColumn("test", "Test");
-            AddColumn("hallo", "Hallo");
+
+            lData.Add(new Data());
         }
 
-        private void DgvData_DataSourceChanged(object sender, EventArgs e)
-        {
-            Trace.WriteLine("DataSourceChanged", "DGV2"); ;
-        }
 
         private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -55,7 +53,7 @@ namespace PDFExtract
             xmlSerializer.Serialize(new StreamWriter("regexes.xml"), LRegEx);
         }
 
-        private void oPenToolStripMenuItem_Click(object sender, EventArgs e)
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
             openFileDialog1.DefaultExt = "Acrobat PDF|*.pdf";
@@ -64,9 +62,9 @@ namespace PDFExtract
             if (openFileDialog1.FileName != null)
             {
                 fileNames = openFileDialog1.FileNames;
-                bool rc = ep.getText(fileNames);
-                richTextBox1.Text = ep.DTexte[fileNames[0]];
+                richTextBox1.Text = ep.getText(fileNames[0]);
                 StringCollection sc = new StringCollection();
+                dw.Test(richTextBox1.Text);
             }
         }
 
@@ -106,11 +104,16 @@ namespace PDFExtract
                 currentText = richTextBox1.SelectedText;
                 currentLength = richTextBox1.SelectionLength;
                 currentIndex = richTextBox1.SelectionStart;
-                Trace.WriteLine(currentIndex + "\t" + currentLength + "\t" + currentText);
+                Trace.WriteLine("SHIFT: " + currentIndex + "\t" + currentLength + "\t" + currentText,"SELECT");
             }
             else if (controlPressed)
             {
                 richTextBox1.SelectionBackColor = Color.Yellow;
+                Trace.WriteLine("CTRL: " + richTextBox1.SelectionStart,"SELECT");
+            }
+            else
+            {
+                Trace.WriteLine("PRESS: " + richTextBox1.SelectionStart, "SELECT");
 
             }
         }
@@ -120,17 +123,13 @@ namespace PDFExtract
             shiftPressed = controlPressed = false;
         }
 
-        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        private void nudSetSpacing_ValueChanged(object sender, EventArgs e)
         {
             ep.SetSpacing(numericUpDown1.Value);
+            richTextBox1.Text = ep.getText(fileNames[0]);
         }
 
-        private void btnNochmal_Click(object sender, EventArgs e)
-        {
-            bool rc = ep.getText(fileNames[0]);
-            richTextBox1.Text = ep.DTexte[fileNames[0]];
-        }
-
+   
         private void nudLineSPacing_ValueChanged(object sender, EventArgs e)
         {
             ep.SetLineSpacing(nudLineSPacing.Value);
@@ -144,7 +143,7 @@ namespace PDFExtract
 
         private void bindingSource1_BindingComplete(object sender, BindingCompleteEventArgs e)
         {
-            bsData.Add(new TemplateRegEx("Hallo", "Ballo"));
+            bsRegEx.Add(new TemplateRegEx("Hallo", "Ballo"));
             Trace.WriteLine("DataBindingComplete: " + e.BindingCompleteState, "BS");
         }
 
@@ -157,26 +156,25 @@ namespace PDFExtract
                 "\t" + e.PropertyDescriptor, "BS");
 
             PropertyDescriptor pd = e.PropertyDescriptor;
-            Trace.WriteLine(bsData.Count, "BS");
+            Trace.WriteLine(bsRegEx.Count, "BS");
             if (pd != null)
             {
                 Trace.WriteLine(pd.Description);
             }
-            if (bsData.Current == null)
+            if (bsRegEx.Current == null)
             {
                 Trace.WriteLine("Current is null", "BS");
             }
             else
             {
-                if (((TemplateRegEx)bsData.Current).Regex.Length > 0)
+                if (((TemplateRegEx)bsRegEx.Current).Regex.Length > 0)
                 {
-                    TemplateRegEx tre = ((TemplateRegEx)bsData.Current);
+                    TemplateRegEx tre = ((TemplateRegEx)bsRegEx.Current);
                     CalcRegEx(tre.Regex);
                     Trace.WriteLine("Current : <" +
                         tre.Regex + ">\t<" +
                         tre.Result + ">"
                         , "BS");
-                    AddColumn(tre.Name, tre.Result);
 
                 }
             }
@@ -201,7 +199,7 @@ namespace PDFExtract
 
         private void dataGridView2_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
-            Trace.WriteLine("DataBindingComplete ", "DGV2");
+            Trace.WriteLine("DataBindingComplete ", "DGVData");
         }
 
         private void dataBindingSource_CurrentChanged(object sender, EventArgs e)
@@ -209,27 +207,6 @@ namespace PDFExtract
 
         }
 
-        private bool AddColumn(string header, string text)
-        {
-            bool rc = true;
-            // 
-            // resultDataGridViewTextBoxColumn
-            // 
-            if (lData.Find(x => x.DData.ContainsKey(header)) == null)
-            {
-                DataGridViewTextBoxColumn dgv = new DataGridViewTextBoxColumn();
-                dgv.DataPropertyName = header;
-                dgv.HeaderText = header;
-                dgv.Name = header + "Column";
-                dgv.Width = 77;
-                dgvData.Columns.Add(dgv);
-            }
-            Data d = new Data("test");
-            d.DData[header] = text;
-            lData.Add(d);
-
-            return rc;
-        }
 
         private void frmMainBindingSource_DataSourceChanged(object sender, EventArgs e)
         {
@@ -238,8 +215,18 @@ namespace PDFExtract
 
         private void frmMainBindingSource_ListChanged(object sender, ListChangedEventArgs e)
         {
-            PropertyDescriptor pd = e.PropertyDescriptor;
             Trace.WriteLine("ListChanged " + e.ListChangedType, "BSData");
+            if (bsData.Current == null) return;
+            PropertyDescriptor pd = e.PropertyDescriptor;
+            Trace.WriteLine("\tListChanged not NULL", "BSData");
+            dgvData.DataSource = ((Data)bsData.Current).Dt;
+        }
+
+        private void bsData_PositionChanged(object sender, EventArgs e)
+        {
+            if (bsData.Current == null) return;
+            Trace.WriteLine("PositionChanged", "BSData");
+            dgvData.DataSource = ((Data)bsData.Current).Dt;
         }
 
         private bool CalcRegEx(string sRegex)
@@ -256,14 +243,14 @@ namespace PDFExtract
                     foreach (Match m in re.Matches(currentText))
                     {
                         Trace.Write(m.Value + "|" + m.Index + "," + m.Length + "/");
-                        ((TemplateRegEx)bsData.Current).Result = m.Value;
+                        ((TemplateRegEx)bsRegEx.Current).Result = m.Value;
                     }
                     Trace.WriteLine("");
                     tsRegexMessage.Text = "RegEx Matches";
                 }
                 else
                 {
-                    ((TemplateRegEx)bsData.Current).Result = "------------";
+                    ((TemplateRegEx)bsRegEx.Current).Result = "------------";
                     tsRegexMessage.Text = "RegEx No Match";
                 }
             }

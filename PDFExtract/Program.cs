@@ -14,6 +14,11 @@ namespace PDFExtract
         [STAThread]
         static void Main()
         {
+            ExtractWertpapiere ew = new ExtractWertpapiere();
+            Environment.Exit(0);
+            FindFiles ff = new FindFiles();
+            DoWork.TestDoWork();
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new frmMain());
