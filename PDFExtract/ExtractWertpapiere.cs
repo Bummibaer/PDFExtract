@@ -84,11 +84,12 @@ namespace PDFExtract
         void ReadParser()
         {
             Trace.WriteLine("Read Parser ");
-            using (TextReader tr = File.OpenText("rules.txt"))
+            using (TextReader tr = File.OpenText(@"..\..\rules.txt"))
             {
                 string line;
                 while ((line = tr.ReadLine()) != null)
                 {
+                    if (line[0] == '#') continue;
                     string[] parts = line.Split(new char[] { ':' }, 2);
                     if (debug > 1) Trace.WriteLine(parts[0] + "\t-\t" + parts[1], "PARSE");
                     string[] names = parts[0].Split(new char[] { ',' });
@@ -124,7 +125,8 @@ namespace PDFExtract
             char[] c = new char[] { '|', '\\', '-', '/' };
             int cindex = 0;
 
-            foreach (string filename in Directory.GetFiles(dir, pdfs))
+            Directory.SetCurrentDirectory(dir);
+            foreach (string filename in Directory.GetFiles(".",pdfs))
             {
                 ////Trace.WriteLine( "$file\n";
                 tw.Write(filename + ';');
@@ -141,29 +143,31 @@ namespace PDFExtract
                 {
                     Trace.WriteLine("Read : " + filename);
                 }
-                /*
-                                if (filename.Contains("973347"))
-                                {
-                                    Trace.WriteLine(filename);
-                                    debug = 2;
-                                }
 
-                  */
+
+                if (filename.Contains("Verkauf"))
+                {
+                    Trace.WriteLine(filename);
+                    //debug = 2;
+                }
+
                 try
                 {
                     ExtractPDF ep = new ExtractPDF();
                     text = ep.getText(filename);
+                    if (text.Length == 0)
+                    {
+                        Trace.WriteLine(Environment.NewLine + "Could not read " + filename, "WARNING");
+                        continue;
+                    }
                 }
                 catch (iTextSharp.text.exceptions.InvalidPdfException ipe)
                 {
                     Trace.WriteLine(Environment.NewLine + "Could not read " + filename, "WARNING");
+                    Trace.WriteLine(ipe.Message);
                     continue;
                 }
-                if (text.Length == 0)
-                {
-                    Trace.WriteLine(Environment.NewLine + "Could not read " + filename, "WARNING");
-                    continue;
-                }
+
                 string[] lines = text.Split(new char[] { '\n' });
                 sStocks stock = new sStocks();
                 int lindex = 0;
@@ -171,15 +175,15 @@ namespace PDFExtract
                 {
                     string line = getNextLine(lines, ref lindex);
 
-                    if (debug > 1) Trace.WriteLine(line);
                     //// Next Line, how to template ?
                     ////                        Wertpapier-Bezeichnung                                               WPKNR/ISIN
                     ////                        Commerzbank AG                                                           CB2458
                     ////                        Gold Qanto Zert.(2005/unlim.)                                      DE000CB24589
+
                     Regex re = new Regex(@"Wertpapier-Bezeichnung\s+WPKNR/ISIN");
                     if (re.IsMatch(line))
                     {
-                        if (debug > 1) Trace.WriteLine(line);
+                        if (debug > 1) Trace.WriteLine(@"Is Match : Wertpapier-Bezeichnung\s+WPKNR/ISIN!", "M");
                         line = getNextLine(lines, ref lindex);
                         //// hint
                         re = new Regex(@"\s{2,}");
@@ -210,6 +214,7 @@ namespace PDFExtract
                             case 2:
                                 stock.Name += ' ' + n[0];
                                 stock.ISIN = n[1];
+                                Trace.WriteLineIf(debug > 1, "Name/ISIN", "M");
                                 break;
                             default:
                                 Trace.WriteLine("Cannot read Name + ISIN ", "ERROR");
@@ -219,17 +224,14 @@ namespace PDFExtract
 
                         tw.Write(stock.WPKNR + ';' + stock.ISIN + ';');
                         if (debug > 0) Trace.WriteLine("Name;ISIN>>>>>>>>>>>>>>>>>>>>>>>>>>> " +
-                            stock.Name + ';' + stock.ISIN);
+                            stock.Name + ';' + stock.ISIN, "M");
                     }
 
                     // Test Valuta 
-                    if (line.Contains("Valuta"))
-                    {
-                        Trace.WriteLine("");
-                    }
                     re = new Regex(@"Valuta\s+Zu Ihren");
                     if (re.IsMatch(line))
                     {
+                        if (debug > 1) Trace.WriteLine(@"Is Match :Valuta\s+Zu Ihren!", "M");
                         line = getNextLine(lines, ref lindex);
 
                         re = new Regex(@"(\w{3})\s+(-*[\d.]+,\d+-*)");
@@ -248,12 +250,16 @@ namespace PDFExtract
                         }
                     }
                     // Test Rules
+                    //if (line.Contains("Freistellungs")) {
+                    //    Debug.WriteLine("<" + line + ">", "TEST");
+                    //    System.Diagnostics.Debugger.Break();
+                    //}
                     foreach (sRules rule in lRules)
                     {
                         if (rule.re.IsMatch(line))
                         {
                             MatchCollection mc = rule.re.Matches(line);
-                            if (debug > 0) Trace.WriteLine("Matches :" + rule.re.ToString() + "\t Matches:" + mc[0].Groups.Count);
+                            if (debug > 0) Trace.WriteLine("Matches :" + rule.re.ToString() + "\t Matches:" + mc[0].Groups.Count, "M");
                             int index = 1;
 
                             foreach (string name in rule.names)
@@ -271,6 +277,10 @@ namespace PDFExtract
                     }
 
                 } while (lindex < lines.Length);
+                if (debug == 2)
+                {
+                    Trace.WriteLine("Test ENde");
+                }
                 tw.WriteLine("");
                 if (debug > 0) Trace.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>>>>> \n");
                 tw.Flush();
