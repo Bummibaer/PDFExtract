@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PDFExtract</RootNamespace>
     <AssemblyName>PDFExtract</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
@@ -56,7 +56,7 @@
     <Compile Include="ExecuteProcess.cs" />
     <Compile Include="ExtractWertpapiere.cs" />
     <Compile Include="FindFiles.cs" />
-    <Compile Include="TemplateRegEx.cs" />
+    <Compile Include="Template.cs" />
     <Compile Include="ExtractPDF.cs" />
     <Compile Include="frmMain.cs">
       <SubType>Form</SubType>
@@ -85,6 +85,7 @@
     <None Include="Properties\DataSources\Data.datasource" />
     <None Include="Properties\DataSources\ExtractPDF.datasource" />
     <None Include="Properties\DataSources\frmMain.datasource" />
+    <None Include="Properties\DataSources\Template.sRule.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

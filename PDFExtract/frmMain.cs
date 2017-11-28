@@ -24,10 +24,12 @@ namespace PDFExtract
         Properties.Settings settings = new Properties.Settings();
         XmlSerializer xmlSerializer;
 
-        private List<TemplateRegEx> lRegEx = new List<TemplateRegEx>();
+        private List<Template> lRegEx = new List<Template>();
         private List<Data> lData = new List<Data>();
 
         DoWork dw = new DoWork();
+
+        Template template = new Template();
 
         public frmMain()
         {
@@ -37,8 +39,8 @@ namespace PDFExtract
 
             if (File.Exists(Properties.Settings.Default.RegExData))
             {
-                xmlSerializer = new XmlSerializer(typeof(TemplateRegEx));
-                LRegEx.AddRange(((List<TemplateRegEx>)xmlSerializer.Deserialize(new StreamReader(Properties.Settings.Default.RegExData))));
+                xmlSerializer = new XmlSerializer(typeof(Template));
+                LRegEx.AddRange(((List<Template>)xmlSerializer.Deserialize(new StreamReader(Properties.Settings.Default.RegExData))));
 
             }
 
@@ -69,32 +71,6 @@ namespace PDFExtract
         }
 
         bool shiftPressed, controlPressed;
-
-        public List<TemplateRegEx> LRegEx
-        {
-            get
-            {
-                return lRegEx;
-            }
-
-            set
-            {
-                lRegEx = value;
-            }
-        }
-
-        public List<Data> LData
-        {
-            get
-            {
-                return lData;
-            }
-
-            set
-            {
-                lData = value;
-            }
-        }
 
         private void richTextBox1_SelectionChanged(object sender, EventArgs e)
         {

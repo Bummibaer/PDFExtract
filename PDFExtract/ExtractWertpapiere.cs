@@ -50,16 +50,6 @@ namespace PDFExtract
 
         // MAIN//
 
-        internal struct sRules
-        {
-            internal Regex re;
-            internal string[] names;
-            public sRules(Regex re, string[] names)
-            {
-                this.re = re;
-                this.names = names;
-            }
-        }
 
         internal struct sStocks
         {
@@ -72,42 +62,11 @@ namespace PDFExtract
 
         }
 
-        List<sRules> lRules = new List<sRules>();
-
         private int debug = 0;
 
         public ExtractWertpapiere()
         {
-            ReadParser();
             DoWork();
-        }
-        void ReadParser()
-        {
-            Trace.WriteLine("Read Parser ");
-            using (TextReader tr = File.OpenText(@"..\..\rules.txt"))
-            {
-                string line;
-                while ((line = tr.ReadLine()) != null)
-                {
-                    if (line[0] == '#') continue;
-                    string[] parts = line.Split(new char[] { ':' }, 2);
-                    if (debug > 1) Trace.WriteLine(parts[0] + "\t-\t" + parts[1], "PARSE");
-                    string[] names = parts[0].Split(new char[] { ',' });
-                    try
-                    {
-                        Regex re = new Regex(parts[1]);
-                        re.IsMatch("test");
-                        sRules sRule = new sRules(re, names);
-                        lRules.Add(sRule);
-                    }
-                    catch (ArgumentException)
-                    {
-                        Trace.WriteLine("Wrong RegEx : " + parts[1] + '!');
-                        Environment.Exit(1);
-                    }
-                }
-            }
-
         }
 
         void DoWork()
@@ -124,6 +83,8 @@ namespace PDFExtract
 
             char[] c = new char[] { '|', '\\', '-', '/' };
             int cindex = 0;
+
+            Template template = new Template();
 
             Directory.SetCurrentDirectory(dir);
             foreach (string filename in Directory.GetFiles(".",pdfs))
@@ -254,7 +215,7 @@ namespace PDFExtract
                     //    Debug.WriteLine("<" + line + ">", "TEST");
                     //    System.Diagnostics.Debugger.Break();
                     //}
-                    foreach (sRules rule in lRules)
+                    foreach (Template.sRule rule in template.LRules)
                     {
                         if (rule.re.IsMatch(line))
                         {
