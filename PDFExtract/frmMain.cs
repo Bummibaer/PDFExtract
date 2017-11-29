@@ -40,7 +40,7 @@ namespace PDFExtract
             if (File.Exists(Properties.Settings.Default.RegExData))
             {
                 xmlSerializer = new XmlSerializer(typeof(Template));
-                LRegEx.AddRange(((List<Template>)xmlSerializer.Deserialize(new StreamReader(Properties.Settings.Default.RegExData))));
+                lRegEx.AddRange(((List<Template>)xmlSerializer.Deserialize(new StreamReader(Properties.Settings.Default.RegExData))));
 
             }
 
@@ -51,8 +51,8 @@ namespace PDFExtract
         private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             Trace.WriteLine("Writing Data", "FORM");
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<TemplateRegEx>));
-            xmlSerializer.Serialize(new StreamWriter("regexes.xml"), LRegEx);
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Template>));
+            xmlSerializer.Serialize(new StreamWriter("regexes.xml"), lRegEx);
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -112,62 +112,14 @@ namespace PDFExtract
         }
 
 
-        private void dataGridView1_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
-        {
-            Trace.WriteLine("DataBindingComplete: " + e.ListChangedType, "DGV");
-        }
-
-        private void bindingSource1_BindingComplete(object sender, BindingCompleteEventArgs e)
-        {
-            bsRegEx.Add(new TemplateRegEx("Hallo", "Ballo"));
-            Trace.WriteLine("DataBindingComplete: " + e.BindingCompleteState, "BS");
-        }
-
-        private void bindingSource1_ListChanged(object sender, ListChangedEventArgs e)
-        {
-            Trace.WriteLine("ListChange: " +
-                e.ListChangedType +
-                "\t" + e.OldIndex +
-                "\t" + e.NewIndex +
-                "\t" + e.PropertyDescriptor, "BS");
-
-            PropertyDescriptor pd = e.PropertyDescriptor;
-            Trace.WriteLine(bsRegEx.Count, "BS");
-            if (pd != null)
-            {
-                Trace.WriteLine(pd.Description);
-            }
-            if (bsRegEx.Current == null)
-            {
-                Trace.WriteLine("Current is null", "BS");
-            }
-            else
-            {
-                if (((TemplateRegEx)bsRegEx.Current).Regex.Length > 0)
-                {
-                    TemplateRegEx tre = ((TemplateRegEx)bsRegEx.Current);
-                    CalcRegEx(tre.Regex);
-                    Trace.WriteLine("Current : <" +
-                        tre.Regex + ">\t<" +
-                        tre.Result + ">"
-                        , "BS");
-
-                }
-            }
-
-        }
-
+    
+   
         private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             Trace.WriteLine("CellEdit: " + e.ColumnIndex + "," + e.RowIndex, "DGT");
         }
 
-        private void bindingSource1_CurrentChanged(object sender, EventArgs e)
-        {
-            Trace.WriteLine("CurrentChanged ", "BS");
-
-        }
-
+     
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
@@ -181,28 +133,6 @@ namespace PDFExtract
         private void dataBindingSource_CurrentChanged(object sender, EventArgs e)
         {
 
-        }
-
-
-        private void frmMainBindingSource_DataSourceChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void frmMainBindingSource_ListChanged(object sender, ListChangedEventArgs e)
-        {
-            Trace.WriteLine("ListChanged " + e.ListChangedType, "BSData");
-            if (bsData.Current == null) return;
-            PropertyDescriptor pd = e.PropertyDescriptor;
-            Trace.WriteLine("\tListChanged not NULL", "BSData");
-            dgvData.DataSource = ((Data)bsData.Current).Dt;
-        }
-
-        private void bsData_PositionChanged(object sender, EventArgs e)
-        {
-            if (bsData.Current == null) return;
-            Trace.WriteLine("PositionChanged", "BSData");
-            dgvData.DataSource = ((Data)bsData.Current).Dt;
         }
 
         private bool CalcRegEx(string sRegex)

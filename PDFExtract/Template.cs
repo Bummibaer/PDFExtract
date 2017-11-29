@@ -20,6 +20,13 @@ namespace PDFExtract
                     return re.ToString();
                 }
                 }
+            public string[] Names
+            {
+                get
+                {
+                    return names;
+                }
+            }
             public sRule(Regex re, string[] names)
             {
                 this.re = re;
