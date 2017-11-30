@@ -18,13 +18,14 @@ namespace PDFExtract
     {
         ExtractPDF ep;
         String[] fileNames;
-        Regex re;
+
         string currentText;
         int currentLength, currentIndex;
         Properties.Settings settings = new Properties.Settings();
         XmlSerializer xmlSerializer;
 
-        private List<Template> lRegEx = new List<Template>();
+        public List<Template> lRegEx ;
+
         private List<Data> lData = new List<Data>();
 
         DoWork dw = new DoWork();
@@ -130,9 +131,9 @@ namespace PDFExtract
             Trace.WriteLine("DataBindingComplete ", "DGVData");
         }
 
-        private void dataBindingSource_CurrentChanged(object sender, EventArgs e)
+        private void sRuleBindingSource_BindingComplete(object sender, BindingCompleteEventArgs e)
         {
-
+            Trace.WriteLine(e.Binding.PropertyName, "sRuleBindingSource_BindingComplete");
         }
 
         private bool CalcRegEx(string sRegex)
@@ -141,7 +142,7 @@ namespace PDFExtract
             try
             {
                 currentText = richTextBox1.Text;
-                re = new Regex(sRegex);
+                Regex re = new Regex(sRegex);
 
                 if (re.IsMatch(currentText))
                 {
@@ -149,14 +150,14 @@ namespace PDFExtract
                     foreach (Match m in re.Matches(currentText))
                     {
                         Trace.Write(m.Value + "|" + m.Index + "," + m.Length + "/");
-                        ((TemplateRegEx)bsRegEx.Current).Result = m.Value;
+                        //((TemplateRegEx)bsRegEx.Current).Result = m.Value;
                     }
                     Trace.WriteLine("");
                     tsRegexMessage.Text = "RegEx Matches";
                 }
                 else
                 {
-                    ((TemplateRegEx)bsRegEx.Current).Result = "------------";
+                    //((TemplateRegEx)bsRegEx.Current).Result = "------------";
                     tsRegexMessage.Text = "RegEx No Match";
                 }
             }

@@ -48,8 +48,8 @@ namespace PDFExtract.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("..\\,,\\rules.txt")]
-        public string TemplateFIle {
+        [global::System.Configuration.DefaultSettingValueAttribute("..\\..\\rules.txt")]
+        public string TemplateFile {
             get {
                 return ((string)(this["TemplateFIle"]));
             }

@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace PDFExtract
 {
-    class Template
+    public class Template
     {
         public struct sRule
         {
-            internal Regex re;
-            internal string[] names;
+            public Regex re;
+            public string[] names;
             public string  reString {
                 get {
                     return re.ToString();
@@ -70,8 +70,8 @@ namespace PDFExtract
 
         private void ReadParser()
         {
-            Trace.WriteLine("Read Parser ");
-            using (TextReader tr = File.OpenText(Properties.Settings.Default.TemplateFIle))
+            Trace.WriteLine("Read Parser : " + Properties.Settings.Default.TemplateFile);
+            using (TextReader tr = File.OpenText(Properties.Settings.Default.TemplateFile))
             {
                 string line;
                 while ((line = tr.ReadLine()) != null)
