@@ -23,12 +23,34 @@ namespace PDFExtract
                 this.regex = new Regex(regex);
             }
         }
+
+        public struct sResult
+        {
+            public int lineIndex;
+            public int begin;
+            public int end;
+            public string name;
+
+            private string value;
+
+            public sResult(int index, int begin, int end, string name, string value) : this()
+            {
+                this.lineIndex = index;
+                this.begin = begin;
+                this.end = end;
+                this.name = name;
+                this.value = value;
+            }
+        };
+
+        public List<sResult> result = new List<sResult>();
+        
         sLine[] sRegex =
         {
            new sLine(  new string[] { "Count" , "Value" } ,  @"\s+St\.\s+(\d+,\d+)\s+(\w{3})\s+([.\d]+,[.\d]+)" ),
-          new sLine(  new string[] {"date" }, @"ABRECHNUNG VOM (\d+\.\d+\.\d+)"),
-          new sLine(  new string[] { "number" } ,  @"Geschäftsnummer\s+:\s+([\d ]+)"),
-          new sLine(  new string[] { "day" , "local" }, @"Geschäftstag\s+:\s+(\d+\.\d+\.\d+)\s+\w+\s+:*\s+([\w\d ]+)"),
+           new sLine(  new string[] {"date" }, @"ABRECHNUNG VOM (\d+\.\d+\.\d+)"),
+           new sLine(  new string[] { "number" } ,  @"Geschäftsnummer\s+:\s+([\d ]+)"),
+           new sLine(  new string[] { "day" , "local" }, @"Geschäftstag\s+:\s+(\d+\.\d+\.\d+)\s+\w+\s+:*\s+([\w\d ]+)"),
            new sLine(  null ,  @"^\s+([^:]+):\s+([A-Z]{3})\s+(-*[.\d]+,[.\d]+-*)" )
         };
         TextWriter tw;
@@ -73,18 +95,17 @@ namespace PDFExtract
 
             Dictionary<string, string> dStock = new Dictionary<string, string>();
             string[] newline = { "\n" };
-            StringBuilder csvLine = new StringBuilder();
+            StringBuilder sbLine = new StringBuilder();
 
             Regex reBedingung = new Regex(@"Wertpapier-Bezeichnung\s+WPKNR/ISIN");
             Regex reLast = new Regex(@"Zu Ihren Lasten");
             Regex reLasten = new Regex(@"(\w{3})\s+(-*[.\d]+,[.\d]+-*)");
             Regex reTest = new Regex(@"(.+)(?! {2,}) (.+)");
 
-            debug = 0;
             string[] lines = text.Split(newline, StringSplitOptions.None);
             for (int index = 0; index < lines.Length; index++)
             {
-                Trace.WriteLineIf(debug > 1, lines[index], "TEST");
+                Trace.WriteLineIf(debug > 1, index.ToString("D3") + ":" + lines[index], "TEST");
                 //## Next Line, how to template ?
                 if (reBedingung.IsMatch(lines[index]))
                 {
@@ -167,21 +188,28 @@ namespace PDFExtract
             foreach (string key in mustHaves)
                 if (dStock.ContainsKey(key))
                 {
-                    csvLine.Append(dStock[key] + ';');
+                    sbLine.Append(dStock[key] + ';');
                     dStock.Remove(key);
                 }
                 else
                 {
-                    csvLine.Append("UNDEFINED;");
+                    sbLine.Append("UNDEFINED;");
                 }
             foreach (string key in dStock.Keys)
             {
-                csvLine.Append(key + ":" + dStock[key] + ';');
+                //writeValues(index,1,10,"Stock" , key + ":" + dStock[key] + ';');
             }
-            Trace.WriteLine(csvLine);
-            tw.WriteLine(csvLine);
+            Trace.WriteLine(sbLine);
+            tw.WriteLine(sbLine);
         }
+        StringBuilder sbLine = new StringBuilder();
+        private void writeValues(int index, int begin, int end, string name, string value)
+        {
+            sbLine.Append(value + ";");
+            sResult r = new sResult(index, begin, end, name, value);
+            result.Add(r);
 
+        }
         public static void TestDoWork()
         {
             ExtractPDF ep = new ExtractPDF();

@@ -15,11 +15,13 @@ namespace PDFExtract
         {
             public Regex re;
             public string[] names;
-            public string  reString {
-                get {
+            public string reString
+            {
+                get
+                {
                     return re.ToString();
                 }
-                }
+            }
             public string[] Names
             {
                 get
@@ -34,7 +36,7 @@ namespace PDFExtract
             }
         }
 
-         List<sRule> lRules = new List<sRule>();
+        public List<sRule> lRules = new List<sRule>();
 
         int debug = 0;
         public Template()
@@ -55,7 +57,7 @@ namespace PDFExtract
             }
         }
 
-        public  List<sRule> LRules
+        public List<sRule> LRules
         {
             get
             {

@@ -19,6 +19,8 @@ namespace PDFExtract
         ExtractPDF ep;
         String[] fileNames;
 
+        Template template;
+
         string currentText;
         int currentLength, currentIndex;
         Properties.Settings settings = new Properties.Settings();
@@ -30,14 +32,13 @@ namespace PDFExtract
 
         DoWork dw = new DoWork();
 
-        Template template = new Template();
-
+ 
         public frmMain()
         {
             InitializeComponent();
             ep = new ExtractPDF();
             ep.SetSpacing(numericUpDown1.Value);
-
+            Trace.WriteLine(Properties.Settings.Default.RegExData, "DEBUG");
             if (File.Exists(Properties.Settings.Default.RegExData))
             {
                 xmlSerializer = new XmlSerializer(typeof(Template));
@@ -113,7 +114,6 @@ namespace PDFExtract
         }
 
 
-    
    
         private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
@@ -134,6 +134,20 @@ namespace PDFExtract
         private void sRuleBindingSource_BindingComplete(object sender, BindingCompleteEventArgs e)
         {
             Trace.WriteLine(e.Binding.PropertyName, "sRuleBindingSource_BindingComplete");
+        }
+
+        private void frmMain_Load(object sender, EventArgs e)
+        {
+            template = new Template();
+            richTextBox1.Text = ep.getText(@"F:\Benutzer\PapaNetz\Dokumente\comdirect\Wertpapierabrechnung_Kauf_0477_St._WKN_ETF090(CS.CO.C.EX-AG.EWT.U.ETF_I)_vom_01.12.2017930236.pdf");
+            StringCollection sc = new StringCollection();
+            dw.debug = 2;
+            dw.Test(richTextBox1.Text);
+        }
+
+        private void sRuleBindingSource_CurrentChanged(object sender, EventArgs e)
+        {
+
         }
 
         private bool CalcRegEx(string sRegex)

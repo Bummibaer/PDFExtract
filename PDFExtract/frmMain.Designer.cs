@@ -36,7 +36,6 @@
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.dgvData = new System.Windows.Forms.DataGridView();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.reStringDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.sRuleBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
@@ -50,6 +49,7 @@
             this.countDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.tsRegexMessage = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lengthDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.menuStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvData)).BeginInit();
@@ -102,7 +102,7 @@
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(920, 597);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(920, 770);
             this.tableLayoutPanel1.TabIndex = 1;
             // 
             // richTextBox1
@@ -111,7 +111,7 @@
             this.richTextBox1.Location = new System.Drawing.Point(3, 3);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.richTextBox1.Size = new System.Drawing.Size(677, 327);
+            this.richTextBox1.Size = new System.Drawing.Size(677, 548);
             this.richTextBox1.TabIndex = 0;
             this.richTextBox1.Text = "";
             this.richTextBox1.SelectionChanged += new System.EventHandler(this.richTextBox1_SelectionChanged);
@@ -124,7 +124,7 @@
             this.dgvData.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvData.Location = new System.Drawing.Point(686, 3);
             this.dgvData.Name = "dgvData";
-            this.dgvData.Size = new System.Drawing.Size(231, 327);
+            this.dgvData.Size = new System.Drawing.Size(231, 548);
             this.dgvData.TabIndex = 4;
             this.dgvData.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.dataGridView2_DataBindingComplete);
             // 
@@ -133,24 +133,19 @@
             this.dataGridView1.AutoGenerateColumns = false;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.reStringDataGridViewTextBoxColumn});
+            this.lengthDataGridViewTextBoxColumn});
             this.dataGridView1.DataSource = this.sRuleBindingSource;
-            this.dataGridView1.Location = new System.Drawing.Point(3, 336);
+            this.dataGridView1.Location = new System.Drawing.Point(3, 557);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.Size = new System.Drawing.Size(432, 150);
             this.dataGridView1.TabIndex = 5;
             // 
-            // reStringDataGridViewTextBoxColumn
-            // 
-            this.reStringDataGridViewTextBoxColumn.DataPropertyName = "reString";
-            this.reStringDataGridViewTextBoxColumn.HeaderText = "reString";
-            this.reStringDataGridViewTextBoxColumn.Name = "reStringDataGridViewTextBoxColumn";
-            this.reStringDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
             // sRuleBindingSource
             // 
+            this.sRuleBindingSource.DataMember = "Names";
             this.sRuleBindingSource.DataSource = typeof(PDFExtract.Template.sRule);
             this.sRuleBindingSource.BindingComplete += new System.Windows.Forms.BindingCompleteEventHandler(this.sRuleBindingSource_BindingComplete);
+            this.sRuleBindingSource.CurrentChanged += new System.EventHandler(this.sRuleBindingSource_CurrentChanged);
             // 
             // openFileDialog1
             // 
@@ -249,7 +244,7 @@
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsRegexMessage});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 599);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 772);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(920, 22);
             this.statusStrip1.TabIndex = 4;
@@ -261,13 +256,20 @@
             this.tsRegexMessage.Size = new System.Drawing.Size(118, 17);
             this.tsRegexMessage.Text = "toolStripStatusLabel1";
             // 
+            // lengthDataGridViewTextBoxColumn
+            // 
+            this.lengthDataGridViewTextBoxColumn.DataPropertyName = "Length";
+            this.lengthDataGridViewTextBoxColumn.HeaderText = "Length";
+            this.lengthDataGridViewTextBoxColumn.Name = "lengthDataGridViewTextBoxColumn";
+            this.lengthDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(920, 621);
+            this.ClientSize = new System.Drawing.Size(920, 794);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.nudLineSPacing);
             this.Controls.Add(this.numericUpDown1);
@@ -277,6 +279,7 @@
             this.Name = "frmMain";
             this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
+            this.Load += new System.EventHandler(this.frmMain_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
@@ -313,8 +316,8 @@
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel tsRegexMessage;
         private System.Windows.Forms.DataGridView dataGridView1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn reStringDataGridViewTextBoxColumn;
         private System.Windows.Forms.BindingSource sRuleBindingSource;
+        private System.Windows.Forms.DataGridViewTextBoxColumn lengthDataGridViewTextBoxColumn;
     }
 }
 
