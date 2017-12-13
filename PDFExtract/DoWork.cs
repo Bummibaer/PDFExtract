@@ -26,25 +26,27 @@ namespace PDFExtract
 
         public struct sResult
         {
-            public int lineIndex;
-            public int begin;
-            public int end;
-            public string name;
+            public int lineIndex { get; }
+            public int length { get; }
+            public string name { get; }
+            public string value { get; }
 
-            private string value;
 
-            public sResult(int index, int begin, int end, string name, string value) : this()
+            public sResult(int index, int length, string name, string value)
             {
-                this.lineIndex = index;
-                this.begin = begin;
-                this.end = end;
+                lineIndex = index;
+                this.length = length;
                 this.name = name;
                 this.value = value;
             }
         };
 
-        public List<sResult> result = new List<sResult>();
-        
+        public List<sResult> Results = new List<sResult>();
+
+        public int debug { get; set; }
+        Dictionary<string, string> dStock = new Dictionary<string, string>();
+        List<Dictionary<string, string>> lStocks = new List<Dictionary<string, string>>();
+
         sLine[] sRegex =
         {
            new sLine(  new string[] { "Count" , "Value" } ,  @"\s+St\.\s+(\d+,\d+)\s+(\w{3})\s+([.\d]+,[.\d]+)" ),
@@ -56,6 +58,7 @@ namespace PDFExtract
         TextWriter tw;
 
         List<sLine> lRegexes = new List<sLine>();
+
         public DoWork()
         {
             foreach (sLine line in sRegex)
@@ -78,9 +81,12 @@ namespace PDFExtract
             tw = File.CreateText("test.csv");
         }
 
-        public int debug { get; set; }
-        List<Dictionary<string, string>> lStocks = new List<Dictionary<string, string>>();
-        public void Test(string text)
+
+        /// <summary>
+        /// Parse text from PDF for 
+        /// </summary>
+        /// <param name="text"></param>
+        public void ParseText(string text)
         {
             string[] mustHaves =
             {
@@ -93,9 +99,8 @@ namespace PDFExtract
                 "date"
             };
 
-            Dictionary<string, string> dStock = new Dictionary<string, string>();
+
             string[] newline = { "\n" };
-            StringBuilder sbLine = new StringBuilder();
 
             Regex reBedingung = new Regex(@"Wertpapier-Bezeichnung\s+WPKNR/ISIN");
             Regex reLast = new Regex(@"Zu Ihren Lasten");
@@ -103,12 +108,14 @@ namespace PDFExtract
             Regex reTest = new Regex(@"(.+)(?! {2,}) (.+)");
 
             string[] lines = text.Split(newline, StringSplitOptions.None);
+            int textIndex = 0;
             for (int index = 0; index < lines.Length; index++)
             {
                 Trace.WriteLineIf(debug > 1, index.ToString("D3") + ":" + lines[index], "TEST");
                 //## Next Line, how to template ?
                 if (reBedingung.IsMatch(lines[index]))
                 {
+                    dStock = new Dictionary<string, string>();
                     Trace.WriteLineIf(debug > 0, "Found:" + lines[index++], "TEST");
                     // hint
                     Trace.WriteLineIf(debug > 0, "\t" + lines[index], "TEST");
@@ -116,8 +123,8 @@ namespace PDFExtract
 
                     if (mc.Count == 1)
                     {
-                        dStock["Fonds"] = mc[0].Groups[1].Value.Trim();
-                        dStock["WPKNR"] = mc[0].Groups[2].Value.Trim();
+                        writeValues(mc[0].Groups[1].Index + textIndex, mc[0].Groups[1].Length, "Fonds", mc[0].Groups[1].Value.Trim());
+                        writeValues(mc[0].Groups[2].Index + textIndex, mc[0].Groups[2].Length, "WPKNR", mc[0].Groups[2].Value.Trim());
                     }
                     else if (mc.Count == 0)
                     {
@@ -130,9 +137,8 @@ namespace PDFExtract
 
                     if (mc.Count == 1)
                     {
-                        dStock["Name"] = mc[0].Groups[1].Value.Trim();
-                        dStock["ISIN"] = mc[0].Groups[2].Value.Trim();
-                        Trace.WriteLineIf(debug > 0, "Name: " + dStock["Name"] + "\tISIN: " + dStock["ISIN"]);
+                        writeValues(mc[0].Groups[2].Index + textIndex, mc[0].Groups[2].Length, "ISIN", mc[0].Groups[2].Value.Trim());
+                        writeValues(mc[0].Groups[1].Index + textIndex, mc[0].Groups[1].Length, "Name", mc[0].Groups[1].Value.Trim());
                     }
                     else if (mc.Count == 0)
                     {
@@ -140,74 +146,71 @@ namespace PDFExtract
                         throw new Exception("Fehler");
                     }
                     continue;
-
                 }
 
-                if (reLast.IsMatch(lines[index]))
+                else if (reLast.IsMatch(lines[index]))
                 {
                     index++;
                     Trace.WriteLineIf(debug > 0, "Found:" + lines[index], "TEST");
                     if (reLasten.IsMatch(lines[index]))
                     {
                         MatchCollection mc = reLasten.Matches(lines[index]);
-
-                        dStock["DebitCurrency"] = mc[0].Groups[1].Value;
-                        dStock["DebitValue"] = mc[0].Groups[2].Value;
-                        Trace.WriteLineIf(debug > 0, "DebitCurrency: " + dStock["DebitCurrency"] + "\tDebitValue: " + dStock["DebitValue"]);
+                        writeValues(mc[0].Groups[1].Index + textIndex, mc[0].Groups[1].Length, "DebitCurrency", mc[0].Groups[1].Value.Trim());
+                        writeValues(mc[0].Groups[2].Index + textIndex, mc[0].Groups[2].Length, "DebitValue", mc[0].Groups[2].Value.Trim());
                     }
                     else
                     {
                         Trace.WriteLine("Was:" + lines[index], "TEST");
                         Trace.WriteLine("Wrong Lasten : " + lines[index]);
                     }
-                    continue;
                 }
-                foreach (sLine re in lRegexes)
-                {
-                    if (re.regex.IsMatch(lines[index]))
+                else foreach (sLine re in lRegexes)
                     {
-                        Match m = re.regex.Match(lines[index]);
-                        if (re.names == null)
+                        if (re.regex.IsMatch(lines[index]))
                         {
-                            dStock[m.Groups[1].Value] = m.Groups[3].Value.Trim();
-                            Trace.WriteLineIf(debug > 0, m.Groups[1].Value + "\t" + m.Groups[3].Value, "TEST");
-                        }
-                        else if (re.names.Length == (m.Groups.Count - 1))
-                        {
-                            for (int i = 1; i < re.names.Length + 1; i++)
+                            Match m = re.regex.Match(lines[index]);
+                            Trace.WriteLineIf(debug > 1, lines[index], "DEBUG");
+                            Trace.WriteLineIf(debug > 2, (re.names == null ? 0 : re.names.Length) + " Names\tRegEx: /" + re.regex.ToString() + "/\tGroups:" + m.Groups.Count);
+                            if (re.names == null)
                             {
-                                dStock[re.names[i - 1]] = m.Groups[i].Value.Trim();
-                                Trace.WriteLineIf(debug > 0, re.names[i - 1] + "\t" + m.Groups[i].Value, "TEST");
+                                writeValues(m.Groups[1].Index + textIndex, m.Groups[1].Length, m.Groups[1].Value.Trim(), m.Groups[3].Value.Trim());
                             }
+                            else
+                            if (re.names.Length == (m.Groups.Count - 1))
+                            {
+                                for (int i = 1; i < re.names.Length + 1; i++)
+                                {
+                                    writeValues(m.Groups[i].Index + textIndex, m.Groups[i].Length, re.names[i - 1], m.Groups[i].Value.Trim());
+                                }
+                            }
+                            else
+                            {
+                                Trace.WriteLine("Wrong Name count", "ERROR");
+                            }
+                            break;
                         }
-                        break;
-                    }
 
-                }
-            }
-            foreach (string key in mustHaves)
-                if (dStock.ContainsKey(key))
-                {
-                    sbLine.Append(dStock[key] + ';');
-                    dStock.Remove(key);
-                }
-                else
-                {
-                    sbLine.Append("UNDEFINED;");
-                }
-            foreach (string key in dStock.Keys)
-            {
-                //writeValues(index,1,10,"Stock" , key + ":" + dStock[key] + ';');
-            }
+                    }
+                textIndex += (lines[index].Length + newline.Length);
+
+            } // foreach line
+            lStocks.Add(dStock);
+
             Trace.WriteLine(sbLine);
             tw.WriteLine(sbLine);
         }
-        StringBuilder sbLine = new StringBuilder();
-        private void writeValues(int index, int begin, int end, string name, string value)
+
+        private StringBuilder sbLine = new StringBuilder();
+
+        private void writeValues(int index, int length, string name, string value)
         {
+            dStock[name] = value;
             sbLine.Append(value + ";");
-            sResult r = new sResult(index, begin, end, name, value);
-            result.Add(r);
+
+            sResult r = new sResult(index, value.Length, name, value);
+            Results.Add(r);
+
+            Trace.WriteLineIf(debug > 0, name + ":" + value, "VALUES");
 
         }
         public static void TestDoWork()
@@ -218,7 +221,7 @@ namespace PDFExtract
             {
                 string text = ep.getText(file);
                 if (text == "") continue;
-                dw.Test(text);
+                dw.ParseText(text);
             }
             dw.Close();
         }

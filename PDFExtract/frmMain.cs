@@ -66,9 +66,9 @@ namespace PDFExtract
             if (openFileDialog1.FileName != null)
             {
                 fileNames = openFileDialog1.FileNames;
-                richTextBox1.Text = ep.getText(fileNames[0]);
+                rtbParsedText.Text = ep.getText(fileNames[0]);
                 StringCollection sc = new StringCollection();
-                dw.Test(richTextBox1.Text);
+                dw.ParseText(rtbParsedText.Text);
             }
         }
 
@@ -78,20 +78,26 @@ namespace PDFExtract
         {
             if (shiftPressed)
             {
-                richTextBox1.SelectionBackColor = Color.Azure;
-                currentText = richTextBox1.SelectedText;
-                currentLength = richTextBox1.SelectionLength;
-                currentIndex = richTextBox1.SelectionStart;
+                rtbParsedText.SelectionBackColor = Color.Azure;
+                currentText = rtbParsedText.SelectedText;
+                currentLength = rtbParsedText.SelectionLength;
+                currentIndex = rtbParsedText.SelectionStart;
                 Trace.WriteLine("SHIFT: " + currentIndex + "\t" + currentLength + "\t" + currentText,"SELECT");
             }
             else if (controlPressed)
             {
-                richTextBox1.SelectionBackColor = Color.Yellow;
-                Trace.WriteLine("CTRL: " + richTextBox1.SelectionStart,"SELECT");
+                rtbParsedText.SelectionBackColor = Color.Yellow;
+                Trace.WriteLine("CTRL: " + rtbParsedText.SelectionStart,"SELECT");
             }
             else
             {
-                Trace.WriteLine("PRESS: " + richTextBox1.SelectionStart, "SELECT");
+                Trace.WriteLine("Changed: " +
+                    rtbParsedText.SelectionStart +
+                    ":" +
+                     rtbParsedText.SelectionLength +
+                     " - " +
+                     rtbParsedText.SelectionBackColor 
+                    , "SELECT");
 
             }
         }
@@ -104,7 +110,7 @@ namespace PDFExtract
         private void nudSetSpacing_ValueChanged(object sender, EventArgs e)
         {
             ep.SetSpacing(numericUpDown1.Value);
-            richTextBox1.Text = ep.getText(fileNames[0]);
+            rtbParsedText.Text = ep.getText(fileNames[0]);
         }
 
    
@@ -139,14 +145,37 @@ namespace PDFExtract
         private void frmMain_Load(object sender, EventArgs e)
         {
             template = new Template();
-            richTextBox1.Text = ep.getText(@"F:\Benutzer\PapaNetz\Dokumente\comdirect\Wertpapierabrechnung_Kauf_0477_St._WKN_ETF090(CS.CO.C.EX-AG.EWT.U.ETF_I)_vom_01.12.2017930236.pdf");
+            rtbParsedText.Text = ep.getText(@"F:\Benutzer\PapaNetz\Dokumente\comdirect\Wertpapierabrechnung_Kauf_0477_St._WKN_ETF090(CS.CO.C.EX-AG.EWT.U.ETF_I)_vom_01.12.2017930236.pdf");
             StringCollection sc = new StringCollection();
-            dw.debug = 2;
-            dw.Test(richTextBox1.Text);
-        }
+            dw.debug = 3;
+            dw.ParseText(rtbParsedText.Text);
+          }
 
         private void sRuleBindingSource_CurrentChanged(object sender, EventArgs e)
         {
+
+        }
+
+        private int rindex = 0;
+        bool cswitch = false;
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (rindex >= dw.Results.Count) return;
+            rtbParsedText.SelectionStart = dw.Results[rindex].lineIndex;
+            rtbParsedText.SelectionLength =  dw.Results[rindex].length;
+            rtbParsedText.SelectionBackColor = cswitch ? Color.Gold : Color.Green;
+            rtbParsedText.Select(rtbParsedText.SelectionStart, rtbParsedText.SelectionLength);
+            textBox1.Text += dw.Results[rindex].lineIndex + "\t" +
+                dw.Results[rindex].length + "\t:" +
+                dw.Results[rindex].name + ":" +
+                dw.Results[rindex].value +
+                rtbParsedText.SelectedText + "|" +
+                rtbParsedText.SelectionBackColor +
+
+                Environment.NewLine;
+            rindex++;
+            cswitch = !cswitch;
 
         }
 
@@ -155,7 +184,7 @@ namespace PDFExtract
             bool rc = true;
             try
             {
-                currentText = richTextBox1.Text;
+                currentText = rtbParsedText.Text;
                 Regex re = new Regex(sRegex);
 
                 if (re.IsMatch(currentText))
