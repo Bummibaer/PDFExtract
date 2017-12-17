@@ -14,11 +14,11 @@ namespace PDFExtract
         [STAThread]
         static void Main()
         {
-/*
-            Environment.Exit(0);
-            FindFiles ff = new FindFiles();
+
+
             DoWork.TestDoWork();
-            */
+
+            Environment.Exit(1);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new frmMain());

@@ -12,6 +12,7 @@ namespace PDFExtract
 {
     class DoWork
     {
+        Template template;
 
         struct sLine
         {
@@ -47,41 +48,19 @@ namespace PDFExtract
         Dictionary<string, string> dStock = new Dictionary<string, string>();
         List<Dictionary<string, string>> lStocks = new List<Dictionary<string, string>>();
 
-        sLine[] sRegex =
-        {
-           new sLine(  new string[] { "Count" , "Value" } ,  @"\s+St\.\s+(\d+,\d+)\s+(\w{3})\s+([.\d]+,[.\d]+)" ),
-           new sLine(  new string[] {"date" }, @"ABRECHNUNG VOM (\d+\.\d+\.\d+)"),
-           new sLine(  new string[] { "number" } ,  @"Geschäftsnummer\s+:\s+([\d ]+)"),
-           new sLine(  new string[] { "day" , "local" }, @"Geschäftstag\s+:\s+(\d+\.\d+\.\d+)\s+\w+\s+:*\s+([\w\d ]+)"),
-           new sLine(  null ,  @"^\s+([^:]+):\s+([A-Z]{3})\s+(-*[.\d]+,[.\d]+-*)" )
-        };
         TextWriter tw;
-
-        List<sLine> lRegexes = new List<sLine>();
 
         public DoWork()
         {
-            foreach (sLine line in sRegex)
-            {
+            // Regexes für Tabelle
+            //
+            template = new Template();
 
-                try
-                {
-                    line.regex.IsMatch(" ");
-                    lRegexes.Add(line);
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine("Wrong Regex : " + sRegex + "\t" + e.Message, "REGEX ERROR");
-                    if (e.InnerException != null)
-                    {
-                        Trace.WriteLine(e.InnerException.Message, "REGEX ERROR");
-                    }
-                }
-            }
             tw = File.CreateText("test.csv");
         }
 
 
+        bool first = true;
         /// <summary>
         /// Parse text from PDF for 
         /// </summary>
@@ -96,7 +75,7 @@ namespace PDFExtract
                 "WPKNR",
                 "DebitCurrency",
                 "DebitValue",
-                "date"
+                "Date"
             };
 
 
@@ -106,6 +85,7 @@ namespace PDFExtract
             Regex reLast = new Regex(@"Zu Ihren Lasten");
             Regex reLasten = new Regex(@"(\w{3})\s+(-*[.\d]+,[.\d]+-*)");
             Regex reTest = new Regex(@"(.+)(?! {2,}) (.+)");
+            dStock = new Dictionary<string, string>();
 
             string[] lines = text.Split(newline, StringSplitOptions.None);
             int textIndex = 0;
@@ -115,7 +95,6 @@ namespace PDFExtract
                 //## Next Line, how to template ?
                 if (reBedingung.IsMatch(lines[index]))
                 {
-                    dStock = new Dictionary<string, string>();
                     Trace.WriteLineIf(debug > 0, "Found:" + lines[index++], "TEST");
                     // hint
                     Trace.WriteLineIf(debug > 0, "\t" + lines[index], "TEST");
@@ -164,7 +143,7 @@ namespace PDFExtract
                         Trace.WriteLine("Wrong Lasten : " + lines[index]);
                     }
                 }
-                else foreach (sLine re in lRegexes)
+                else foreach (Template.sRule re in template.LRules)
                     {
                         if (re.regex.IsMatch(lines[index]))
                         {
@@ -195,9 +174,22 @@ namespace PDFExtract
 
             } // foreach line
             lStocks.Add(dStock);
+            if (first)
+            {
+                foreach (string name in dStock.Keys)
+                {
+                    Trace.Write(name + "\t;");
+                    tw.Write(name + ";");
+                }
+                Trace.WriteLine("");
+                tw.WriteLine("");
+                first = false;
+            }
 
-            Trace.WriteLine(sbLine);
+            Trace.WriteLineIf(debug> 0 ,Environment.NewLine + sbLine);
             tw.WriteLine(sbLine);
+            sbLine = new StringBuilder();
+            tw.Flush();
         }
 
         private StringBuilder sbLine = new StringBuilder();
@@ -210,16 +202,40 @@ namespace PDFExtract
             sResult r = new sResult(index, value.Length, name, value);
             Results.Add(r);
 
-            Trace.WriteLineIf(debug > 0, name + ":" + value, "VALUES");
+            Trace.WriteLineIf(debug>1 , name + ":" + value, "VALUES");
 
         }
         public static void TestDoWork()
         {
             ExtractPDF ep = new ExtractPDF();
             DoWork dw = new DoWork();
-            foreach (string file in Directory.EnumerateFiles(@"F:\Benutzer\PapaNetz\Dokumente\comdirect", "Wertpapierabrechnung_Kauf*.pdf", SearchOption.TopDirectoryOnly))
+            TextWriter tw = File.CreateText("ertrag.csv");
+            char[] c = new char[] { '|', '\\', '-', '/' };
+            int cindex = 0;
+            int debug = 0;
+
+            tw.WriteLine("File;Datum;Sonder;Art;Geschäftsnummer;Geschäftstag;WPKNR;Name;ISIN;Test1;Test2;Rest");
+
+            string dir = @"F:\Benutzer\PapaNetz\Dokumente\comdirect\";
+            Trace.WriteLine("Work on : " + dir + "Wertpapierabrechnung_*.pdf" +
+                "\t" + Directory.Exists(dir));
+
+
+            foreach (string filename in Directory.EnumerateFiles(dir, "Wertpapierabrechnung_*.pdf"))
             {
-                string text = ep.getText(file);
+                if (debug == 0)
+                {
+                    Trace.Write(c[cindex++].ToString() + '\b');
+                    if (cindex >= c.Length)
+                    {
+                        cindex = 0;
+                    }
+                }
+                else
+                {
+                    Trace.WriteLine("Read : " + filename);
+                }
+                string text = ep.getText(filename);
                 if (text == "") continue;
                 dw.ParseText(text);
             }

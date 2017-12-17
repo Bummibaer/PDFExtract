@@ -13,13 +13,13 @@ namespace PDFExtract
     {
         public struct sRule
         {
-            public Regex re;
+            public Regex regex;
             public string[] names;
             public string reString
             {
                 get
                 {
-                    return re.ToString();
+                    return regex.ToString();
                 }
             }
             public string[] Names
@@ -31,12 +31,12 @@ namespace PDFExtract
             }
             public sRule(Regex re, string[] names)
             {
-                this.re = re;
+                this.regex = re;
                 this.names = names;
             }
         }
 
-        public List<sRule> lRules = new List<sRule>();
+        private List<sRule> lRules = new List<sRule>();
 
         int debug = 0;
         public Template()
@@ -73,6 +73,10 @@ namespace PDFExtract
         private void ReadParser()
         {
             Trace.WriteLine("Read Parser : " + Properties.Settings.Default.TemplateFile);
+            if ( !File.Exists(Properties.Settings.Default.TemplateFile))
+            {
+                throw new FileNotFoundException("Could not find : " + Properties.Settings.Default.TemplateFile);
+            }
             using (TextReader tr = File.OpenText(Properties.Settings.Default.TemplateFile))
             {
                 string line;

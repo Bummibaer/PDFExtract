@@ -8,8 +8,8 @@
     <Setting Name="RegExData" Type="System.String" Scope="User">
       <Value Profile="(Default)">regex.xml</Value>
     </Setting>
-    <Setting Name="TemplateFIle" Type="System.String" Scope="User">
-      <Value Profile="(Default)">..\,,\rules.txt</Value>
+    <Setting Name="TemplateFile" Type="System.String" Scope="User">
+      <Value Profile="(Default)">..\..\rules.txt</Value>
     </Setting>
   </Settings>
 </SettingsFile>
