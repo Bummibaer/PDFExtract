@@ -55,6 +55,7 @@
     <Compile Include="DoWork.cs" />
     <Compile Include="ExecuteProcess.cs" />
     <Compile Include="FindFiles.cs" />
+    <Compile Include="QIF.cs" />
     <Compile Include="Template.cs" />
     <Compile Include="ExtractPDF.cs" />
     <Compile Include="frmMain.cs">
