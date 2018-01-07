@@ -4,5 +4,5 @@ DatumG :^\w*ABRECHNUNG VOM\s+(\d+\.\d+\.\d+)
 NummerG :Geschäftsnummer\s+:\s+([\d ]+)
 TagG,Platz :Geschäftstag\s+:\s+(\d+\.\d+\.\d+)\s+\w+\s+:*\s+([\w\d ]+)
 #DE14 2004 1133 0123 2701 00 EUR 20.06.2017 EUR 1.694,81
-Kostenart,Währung,Betrag :\s+(\d+\.\d+\.\d+)\s([A-Z]{3})\s+(-*[\d.]*,*\d+)
+Kostenart,Währung,Betrag :(\w+)\s+:\s+([A-Z]{3})\s+(-*[\d.]*,*\d+-*)
 Sonder,Geschäftsart :^[^ ]*(\w*)\s*Wertpapier([ \w]+)\s*$

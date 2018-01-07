@@ -17,8 +17,8 @@ namespace PDFExtract
 
 
             DoWork.TestDoWork();
-
             Environment.Exit(1);
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new frmMain());

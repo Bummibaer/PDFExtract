@@ -26,13 +26,13 @@ namespace PDFExtract
         Properties.Settings settings = new Properties.Settings();
         XmlSerializer xmlSerializer;
 
-        public List<Template> lRegEx ;
+        public List<Template> lRegEx;
 
         private List<Data> lData = new List<Data>();
 
         DoWork dw = new DoWork();
 
- 
+
         public frmMain()
         {
             InitializeComponent();
@@ -82,12 +82,12 @@ namespace PDFExtract
                 currentText = rtbParsedText.SelectedText;
                 currentLength = rtbParsedText.SelectionLength;
                 currentIndex = rtbParsedText.SelectionStart;
-                Trace.WriteLine("SHIFT: " + currentIndex + "\t" + currentLength + "\t" + currentText,"SELECT");
+                Trace.WriteLine("SHIFT: " + currentIndex + "\t" + currentLength + "\t" + currentText, "SELECT");
             }
             else if (controlPressed)
             {
                 rtbParsedText.SelectionBackColor = Color.Yellow;
-                Trace.WriteLine("CTRL: " + rtbParsedText.SelectionStart,"SELECT");
+                Trace.WriteLine("CTRL: " + rtbParsedText.SelectionStart, "SELECT");
             }
             else
             {
@@ -96,7 +96,7 @@ namespace PDFExtract
                     ":" +
                      rtbParsedText.SelectionLength +
                      " - " +
-                     rtbParsedText.SelectionBackColor 
+                     rtbParsedText.SelectionBackColor
                     , "SELECT");
 
             }
@@ -113,20 +113,20 @@ namespace PDFExtract
             rtbParsedText.Text = ep.getText(fileNames[0]);
         }
 
-   
+
         private void nudLineSPacing_ValueChanged(object sender, EventArgs e)
         {
             ep.SetLineSpacing(nudLineSPacing.Value);
         }
 
 
-   
+
         private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             Trace.WriteLine("CellEdit: " + e.ColumnIndex + "," + e.RowIndex, "DGT");
         }
 
-     
+
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
@@ -149,7 +149,8 @@ namespace PDFExtract
             StringCollection sc = new StringCollection();
             dw.debug = 3;
             dw.ParseText(rtbParsedText.Text);
-          }
+            for (int i = 0; i < dw.Results.Count; i++) HiglightText(i);
+        }
 
         private void sRuleBindingSource_CurrentChanged(object sender, EventArgs e)
         {
@@ -161,22 +162,25 @@ namespace PDFExtract
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (rindex >= dw.Results.Count) return;
-            rtbParsedText.SelectionStart = dw.Results[rindex].lineIndex;
-            rtbParsedText.SelectionLength =  dw.Results[rindex].length;
+            HiglightText(rindex);
+            rindex++;
+        }
+
+        private void HiglightText(int index)
+        {
+            if (index >= dw.Results.Count) return;
+            rtbParsedText.SelectionStart = dw.Results[index].lineIndex;
+            rtbParsedText.SelectionLength = dw.Results[index].length;
             rtbParsedText.SelectionBackColor = cswitch ? Color.Gold : Color.Green;
             rtbParsedText.Select(rtbParsedText.SelectionStart, rtbParsedText.SelectionLength);
-            textBox1.Text += dw.Results[rindex].lineIndex + "\t" +
-                dw.Results[rindex].length + "\t:" +
-                dw.Results[rindex].name + ":" +
-                dw.Results[rindex].value +
-                rtbParsedText.SelectedText + "|" +
-                rtbParsedText.SelectionBackColor +
-
-                Environment.NewLine;
-            rindex++;
+            textBox1.Text += dw.Results[index].lineIndex + "\t" 
+                + dw.Results[index].length + "\t:" 
+                + dw.Results[index].name + "\t:" 
+                + dw.Results[index].value + "\t:"
+                + rtbParsedText.SelectedText + "\t|" 
+                + rtbParsedText.SelectionBackColor 
+                + Environment.NewLine;
             cswitch = !cswitch;
-
         }
 
         private bool CalcRegEx(string sRegex)

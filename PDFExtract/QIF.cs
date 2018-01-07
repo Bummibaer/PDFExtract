@@ -4,26 +4,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using QifApi;
+using QifApi.Transactions;
+
 namespace PDFExtract
 {
     class QIF
     {
 
-//         Letter Definition
-// D Date(optional)
-// N Action
-// Y Security
-// I Price
-// Q Quantity(# of shares or split ratio) 
-// C Cleared status
-// P  1st line text for transfers/reminders
-// M  Memo
-// O  Commission
-// L  Account for transfer
-// T  Amount of transaction
-// U  Amount of transaction (higher possible value than T)
-// $  Amount transferred 
-// ^  End of entry
+        //         Letter Definition
+        // D Date(optional)
+        // N Action
+        // Y Security
+        // I Price
+        // Q Quantity(# of shares or split ratio) 
+        // C Cleared status
+        // P  1st line text for transfers/reminders
+        // M  Memo
+        // O  Commission
+        // L  Account for transfer
+        // T  Amount of transaction
+        // U  Amount of transaction (higher possible value than T)
+        // $  Amount transferred 
+        // ^  End of entry
         //!Type:Invst
         //D8.1.17
         //V8.3.17
@@ -44,7 +47,22 @@ namespace PDFExtract
         //B0.00|0.00|0.00
         //^
 
+        QifDom qd;
 
+        public QIF()
+        {
+            QifApi.Config.Configuration conf = new QifApi.Config.Configuration();
+            
+            qd = new QifDom(conf);
 
+            
+            
+        }
+
+        public void AddInvestment()
+        {
+            InvestmentTransaction    t = new InvestmentTransaction();
+            
+        }
     }
 }
