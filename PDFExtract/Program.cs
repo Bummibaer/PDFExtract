@@ -16,7 +16,8 @@ namespace PDFExtract
         {
 
 
-            DoWork.TestDoWork();
+            DoWork.TestDoWork(@"Wertpapierabrechnung_Verkauf_33_St._WKN_A1C6L0(GAM_MULT.-ASIA_FOCE_USD_B)_vom_11.12.2017584885.pdf");
+            //DoWork.TestDoWork();
             Environment.Exit(1);
 
             Application.EnableVisualStyles();

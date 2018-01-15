@@ -74,29 +74,28 @@ namespace PDFExtract
             string[] newline = { "\n" };
 
             Regex reBedingung = new Regex(@"Wertpapier-Bezeichnung\s+WPKNR/ISIN");
-            Regex reLast = new Regex(@"Zu Ihren Lasten");
-            Regex reLasten = new Regex(@"(\w{3})\s+(-*[.\d]+,[.\d]+-*)");
+            Regex reValuta = new Regex(@"IBAN\s+Valuta\s+Zu\s+Ihren\s+(\w+)");
+            Regex reLasten = new Regex(@"(\w{3}\s+-*[.\d]+,[.\d]+-*)");
             Regex reTest = new Regex(@"(.+)(?! {2,}) (.+)");
+            MatchCollection mc;
             dStock = new Dictionary<string, string>();
 
             string[] lines = text.Split(newline, StringSplitOptions.None);
             int textIndex = 0;
             for (int index = 0; index < lines.Length; index++)
             {
-                if ( index == 38)
-                {
-                    Trace.WriteLine("");
-                }
+                //if (index == 38)
+                //{
+                //    Trace.WriteLine("");
+                //}
                 Trace.WriteLineIf(debug > 1, index.ToString("D3") + "\t: L=" + lines[index].Length + "\t<" + lines[index] + '>', "TEST");
                 //## Next Line, how to template ?
                 if (reBedingung.IsMatch(lines[index]))
                 {
                     Trace.WriteLineIf(debug > 0, "Found:" + lines[index], "TEST");
-                    // hint
-                    textIndex += (lines[index].Length + newline.Length);
-                    index++;
-                    Trace.WriteLineIf(debug > 0, "Name 1.Line \t:" + lines[index], "TEST");
-                    MatchCollection mc = reTest.Matches(lines[index]);
+                    // Goto Next Line
+                    GetNextLine(newline, lines, ref textIndex, ref index);
+                    mc = reTest.Matches(lines[index]);
 
                     if (mc.Count == 1)
                     {
@@ -109,9 +108,7 @@ namespace PDFExtract
                         throw new Exception("Fehler");
                     }
 
-                    textIndex += (lines[index].Length + newline.Length);
-                    index++;
-                    Trace.WriteLineIf(debug > 0, "Name 2.Line\t: " + lines[index], "TEST");
+                    GetNextLine(newline, lines, ref textIndex, ref index);
                     mc = reTest.Matches(lines[index]);
 
                     if (mc.Count == 1)
@@ -124,20 +121,15 @@ namespace PDFExtract
                         Trace.WriteLine("10.:" + lines[index], "ERROR");
                         throw new Exception("Fehler");
                     }
-                    textIndex += (lines[index].Length + newline.Length);
-                    continue;
                 }
-
-                else if (reLast.IsMatch(lines[index]))
+                else if (reValuta.IsMatch(lines[index]))
                 {
-                    textIndex += (lines[index].Length + newline.Length);
-                    index++;
-                    Trace.WriteLineIf(debug > 0, "Found:" + lines[index], "TEST");
+                    GetNextLine(newline, lines, ref textIndex, ref index);
+
                     if (reLasten.IsMatch(lines[index]))
                     {
-                        MatchCollection mc = reLasten.Matches(lines[index]);
-                        writeValues(mc[0].Groups[1].Index + textIndex, mc[0].Groups[1].Length, "DebitCurrency", mc[0].Groups[1].Value.Trim());
-                        writeValues(mc[0].Groups[2].Index + textIndex, mc[0].Groups[2].Length, "DebitValue", mc[0].Groups[2].Value.Trim());
+                        mc = reLasten.Matches(lines[index]);
+                        writeValues(mc[0].Groups[2].Index + textIndex, mc[0].Groups[1].Length, "DebitValue", mc[0].Groups[1].Value.Trim());
                     }
                     else
                     {
@@ -173,7 +165,6 @@ namespace PDFExtract
 
                     }
                 textIndex += (lines[index].Length + newline.Length);
-
             } // foreach line
             lStocks.Add(dStock);
             if (first)
@@ -203,6 +194,12 @@ namespace PDFExtract
             tw.Flush();
         }
 
+        private void GetNextLine(string[] newline, string[] lines, ref int textIndex, ref int index)
+        {
+            textIndex += (lines[index].Length + newline.Length);
+            index++;
+            Trace.WriteLineIf(debug > 0, "Found:" + lines[index], "TEST");
+        }
 
         private void writeValues(int index, int length, string name, string value)
         {
@@ -218,18 +215,16 @@ namespace PDFExtract
 
 
         }
+
+        static string dir = @"F:\Benutzer\PapaNetz\Dokumente\comdirect\cominvest\";
         public static void TestDoWork()
         {
             ExtractPDF ep = new ExtractPDF();
             DoWork dw = new DoWork();
-            TextWriter tw = File.CreateText("ertrag.csv");
             char[] c = new char[] { '|', '\\', '-', '/' };
             int cindex = 0;
             int debug = 0;
 
-            tw.WriteLine("File;Datum;Sonder;Art;Geschäftsnummer;Geschäftstag;WPKNR;Name;ISIN;Test1;Test2;Rest");
-
-            string dir = @"F:\Benutzer\PapaNetz\Dokumente\comdirect\";
             Trace.WriteLine("Work on : "
                 + dir
                 + "Wertpapierabrechnung_*.pdf"
@@ -247,7 +242,7 @@ namespace PDFExtract
                     {
                         cindex = 0;
                     }
-                    if ( line++ == 64)
+                    if (line++ == 64)
                     {
                         Trace.WriteLine("");
                         line = 0;
@@ -258,12 +253,23 @@ namespace PDFExtract
                     Trace.WriteLine("Read : " + filename);
                 }
                 string text = ep.getText(filename);
-                if (filename.Contains("NORDEA"))
-                {
-                    dw.debug = 3;
-                }
+                //if (filename.Contains("NORDEA"))
+                //{
+                //    dw.debug = 3;
+                //}
                 dw.ParseText(text);
             }
+            dw.Close();
+        }
+        public static void TestDoWork(string filename)
+        {
+            ExtractPDF ep = new ExtractPDF();
+            DoWork dw = new DoWork();
+
+            string text = ep.getText(dir + filename);
+            dw.debug = 3;
+
+            dw.ParseText(text);
             dw.Close();
         }
 
