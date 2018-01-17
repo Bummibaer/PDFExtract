@@ -75,8 +75,9 @@ namespace PDFExtract
 
             Regex reBedingung = new Regex(@"Wertpapier-Bezeichnung\s+WPKNR/ISIN");
             Regex reValuta = new Regex(@"IBAN\s+Valuta\s+Zu\s+Ihren\s+(\w+)");
-            Regex reLasten = new Regex(@"(\w{3}\s+-*[.\d]+,[.\d]+-*)");
+            Regex reLasten = new Regex(@"(?<Valuta>\d+\.\d+\.\d+)\s+(?<Summe>\w{3}\s+-*[.\d]+,[.\d]+-*)");
             Regex reTest = new Regex(@"(.+)(?! {2,}) (.+)");
+
             MatchCollection mc;
             dStock = new Dictionary<string, string>();
 
@@ -129,12 +130,23 @@ namespace PDFExtract
                     if (reLasten.IsMatch(lines[index]))
                     {
                         mc = reLasten.Matches(lines[index]);
-                        writeValues(mc[0].Groups[2].Index + textIndex, mc[0].Groups[1].Length, "DebitValue", mc[0].Groups[1].Value.Trim());
+                        foreach (string gname in reLasten.GetGroupNames())
+                        {
+                            if (gname != "0")
+                            {
+                                Trace.WriteLineIf(debug > 0 ,
+                                    gname + '\t'
+                                    + mc[0].Groups[gname].Index + '\t'
+                                    + mc[0].Groups[gname].Value, "TEST");
+                                writeValues(mc[0].Groups[gname].Index, mc[0].Groups[gname].Length, gname, mc[0].Groups[gname].Value);
+                            }
+
+                        }
                     }
                     else
                     {
                         Trace.WriteLine("Was:" + lines[index], "TEST");
-                        Trace.WriteLine("Wrong Lasten : " + lines[index]);
+                        Trace.WriteLine("Wrong Lasten : " + reLasten.ToString());
                     }
                 }
                 else foreach (Template.sRule re in template.LRules)
@@ -216,7 +228,7 @@ namespace PDFExtract
 
         }
 
-        static string dir = @"F:\Benutzer\PapaNetz\Dokumente\comdirect\cominvest\";
+        static string dir = @"F:\Benutzer\PapaNetz\Dokumente\comdirect\";
         public static void TestDoWork()
         {
             ExtractPDF ep = new ExtractPDF();
