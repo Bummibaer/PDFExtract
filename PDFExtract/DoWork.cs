@@ -47,7 +47,7 @@ namespace PDFExtract
         public int debug { get; set; }
         Dictionary<string, string> dStock = new Dictionary<string, string>();
         List<Dictionary<string, string>> lStocks = new List<Dictionary<string, string>>();
-
+       
         TextWriter tw;
 
         public DoWork()
@@ -55,30 +55,18 @@ namespace PDFExtract
             // Regexes für Tabelle
             //
             template = new Template();
-
             tw = File.CreateText("test.csv");
         }
 
-
         bool first = true;
+
+        
         /// <summary>
         /// Parse text from PDF for 
         /// </summary>
         /// <param name="text"></param>
         public void ParseText(string text)
         {
-            string[] mustHaves =
-            {
-                "Fonds",
-                "Name",
-                "ISIN",
-                "WPKNR",
-                "DebitCurrency",
-                "DebitValue",
-                "Date"
-            };
-
-
             string[] newline = { "\n" };
 
             Regex reBedingung = new Regex(@"Wertpapier-Bezeichnung\s+WPKNR/ISIN");
