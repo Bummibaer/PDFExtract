@@ -1,8 +1,10 @@
 ﻿#St. 21 EUR 77,68
-Stück, Währungs, Kurs :^\s*St\.\s+([\d.]+,*\d*)\s+(\w{3})\s+([\d.]+,*\d*)
+Stück,  Kurs :^\s*St\.\s+([\d.]+,*\d*)\s+(\w{3}\s+[\d.]+,*\d*)
 DatumG :^\w*ABRECHNUNG VOM\s+(\d+\.\d+\.\d+)
 NummerG :Geschäftsnummer\s+:\s+([\d ]+)
 TagG,Platz :Geschäftstag\s+:\s+(\d+\.\d+\.\d+)\s+\w+\s+:*\s+([\w\d ]+)
 #DE14 2004 1133 0123 2701 00 EUR 20.06.2017 EUR 1.694,81
-Kostenart,Währung,Betrag :\s+(\d+\.\d+\.\d+)\s([A-Z]{3})\s+(-*[\d.]*,*\d+)
+#                              Ausmachender Betrag : USD 4.986,63
+#   Umrechn. zum Dev. kurs 1,180600 vom 12.12.2017 : EUR 4.223,81
+Kostenart,Betrag :^(.+[^:]):\s+([A-Z]{3}\s+-*[\d.]*,*\d+-*)
 Sonder,Geschäftsart :^[^ ]*(\w*)\s*Wertpapier([ \w]+)\s*$

@@ -34,8 +34,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="itextsharp, Version=5.5.10.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
-      <HintPath>..\packages\iTextSharp.5.5.10\lib\itextsharp.dll</HintPath>
+    <Reference Include="itextsharp, Version=5.5.12.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>..\packages\iTextSharp.5.5.12\lib\itextsharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="QifApi, Version=1.0.6014.6272, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\QifApi.1.0.6014.6272\lib\net45\QifApi.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -54,7 +58,9 @@
     <Compile Include="Data.cs" />
     <Compile Include="DoWork.cs" />
     <Compile Include="ExecuteProcess.cs" />
+    <Compile Include="Finanzreport.cs" />
     <Compile Include="FindFiles.cs" />
+    <Compile Include="QIF.cs" />
     <Compile Include="Template.cs" />
     <Compile Include="ExtractPDF.cs" />
     <Compile Include="frmMain.cs">

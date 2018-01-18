@@ -223,7 +223,7 @@ namespace PDFExtract
                 {
                     Trace.WriteLine("Read : " + filename);
                 }
-                string text = ep.getText(filename);
+                string text = ep.getText(filename,1);
                 if (text == "") continue;
                 dw.ParseText(text);
             }

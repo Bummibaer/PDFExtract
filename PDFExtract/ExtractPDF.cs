@@ -29,14 +29,22 @@ namespace PDFExtract
             bool rc = true;
             foreach (string file in filenames)
             {
-                getText(file);
+                getText(file,1);
             }
             return rc;
         }
 
-
-        public string getText(string filename)
+        /// <summary>
+        /// Extrahiert Text aus filename
+        /// read only "page" if pages != 0 
+        ///
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="pages"></param>
+        /// <returns></returns>
+        public string getText(string filename, int pages)
         {
+            string text;
             if (!bSpacingChanged && dTexte.ContainsKey(filename))
             {
                 Trace.WriteLine("Schon gelesen", "PDF");
@@ -49,7 +57,20 @@ namespace PDFExtract
                     {
 
                         //Trace.WriteLine(filename + "\tspacing = " + spacing + "\tlinespacing = " + linespacing, "PDF");
-                        string text = PdfTextExtractor.GetTextFromPage(pr, 1, new snSimpleTextExtractionStrategy(linespacing, spacing));
+                        ITextExtractionStrategy tes = new snSimpleTextExtractionStrategy(linespacing, spacing);
+                        if (pages != 0)
+                        {
+                            text = PdfTextExtractor.GetTextFromPage(pr, 1, tes);
+                        }
+                        else
+                        {
+                            StringBuilder sbText = new StringBuilder();
+                            for (int i = 1; i <= pr.NumberOfPages; i++)
+                                sbText.Append(
+                                    PdfTextExtractor.GetTextFromPage(pr, i,tes )
+                                    );
+                            text = sbText.ToString();
+                        }
 
                         if (dTexte.ContainsKey(filename))
                         {

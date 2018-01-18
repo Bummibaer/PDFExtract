@@ -36,7 +36,7 @@ namespace PDFExtract
                         ExecuteProcess ep = new ExecuteProcess(command);
                         ep.Run(filename);
                         List<string> plines = ep.Text;
-                        string text = epdf.getText(filename);
+                        string text = epdf.getText(filename,1);
                         string[] elines = text.Split(new char[] { '\n' });
                         int index = 0;
                         int count_ptext = plines.Count;

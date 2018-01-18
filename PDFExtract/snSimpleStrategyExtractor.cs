@@ -1,6 +1,7 @@
 ﻿
 
 using System;
+using System.Diagnostics;
 using System.Text;
 /*
  * $Id$
@@ -137,7 +138,15 @@ namespace iTextSharp.text.pdf.parser
             LineSegment segment = renderInfo.GetBaseline();
             Vector start = segment.GetStartPoint();
             Vector end = segment.GetEndPoint();
-
+            if (renderInfo.PdfString.ToString().IndexOf("IA214125G") >= 0)
+            {
+                Trace.WriteLine("");
+            }
+            Trace.Write("First :" + firstRender + '\t'
+                + renderInfo.PdfString.IsString() + '\t'
+                + (renderInfo.PdfString.IsString() ? renderInfo.PdfString.ToString() : "?????") + '\t'
+                + start.ToString()
+                );
             if (!firstRender)
             {
                 Vector x0 = start;
@@ -146,17 +155,20 @@ namespace iTextSharp.text.pdf.parser
 
                 // see http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html
                 float dist = (x2.Subtract(x1)).Cross((x1.Subtract(x0))).LengthSquared / x2.Subtract(x1).LengthSquared;
-                
+
                 float sameLineThreshold = LineSpacing; // we should probably base this on the current font metrics, 
-                                                      // but 1 pt seems to be sufficient for the time being
+                                                       // but 1 pt seems to be sufficient for the time being
                 if (dist > sameLineThreshold)
                     hardReturn = true;
+
+                Trace.WriteLine('\t' + dist.ToString() + '\t' + hardReturn.ToString());
 
                 // Note:  Technically, we should check both the start and end positions,
                 //in case the angle of the text changed without any displacement
                 // but this sort of thing probably doesn't happen much in reality, so we'll leave it alone for now
             }
-
+            else
+                Trace.WriteLine("");
             if (hardReturn)
             {
                 //System.out.Println("<< Hard Return >>");
