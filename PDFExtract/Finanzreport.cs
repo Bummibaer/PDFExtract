@@ -16,17 +16,17 @@ namespace PDFExtract
 
         public Finanzreport()
         {
-            debug = 2;
+            debug = 0;
         }
+        TextWriter tw = File.CreateText("ertrag.csv");
         public void TestDoWork()
         {
             ExtractPDF ep = new ExtractPDF();
             ep.SetLineSpacing(5);
-            TextWriter tw = File.CreateText("ertrag.csv");
             char[] c = new char[] { '|', '\\', '-', '/' };
             int cindex = 0;
 
-            tw.WriteLine("File;Datum;Sonder;Art;Geschäftsnummer;Geschäftstag;WPKNR;Name;ISIN;Test1;Test2;Rest");
+            tw.WriteLine("File;Datum;Wert;Kaufwert;Gewinn");
 
             //string dir = @"F:\Benutzer\PapaNetz\Dokumente\comdirect\";
             string dir = @"P:\privat\comdirect\";
@@ -48,34 +48,54 @@ namespace PDFExtract
                 {
                     Trace.WriteLine("Read : " + filename);
                 }
-                string text = ep.getText(filename,0);
+                string text = ep.getText(filename, 0);
                 if (text == "") continue;
-                ParseText(text);
+                ParseText(filename, text);
             }
 
-
+            tw.Close();
 
         }
 
-        private void ParseText(string text)
+        private void ParseText(string file, string text)
         {
             string[] newline = { "\n" };
 
             // Gesamtbestand 2.193,14 6.156,94 -3.963,80
-            Regex reBedingung = new Regex(@"^\s+Gesamt\w+\s+(<?Kauf>[+-]*[\d.]+,\d+[+-]*)\s+(<?Wert>[+-]*[\d.]+,\d+[+-]*)\s+(<?Gewinn>[+-]*[\d.]+,\d+[+-]*)");
+            Regex reBedingung = new Regex(
+                @"^\s*Gesamt\w+\s+(?<Wert>[+-]*[\d.]+,\d+[+-]*)\s+(?<Kauf>[+-]*[\d.]+,\d+[+-]*)\s+(?<Gewinn>[+-]*[\d.]+,\d+[+-]*)");
+            Regex reDatum = new Regex(
+                @"Finanzreport Nr. \d+ per (?<Datum>\d+.\d+.\d+)\s*$");
+
+            string Datum = "Unknown";
+
             string[] lines = text.Split(newline, StringSplitOptions.None);
+
 
             for (int index = 0; index < lines.Length; index++)
             {
-                Trace.WriteLineIf(debug > 1, lines[index]);
-                if (lines[index].IndexOf("Gesamtkurs") >= 0)
-                {
-                    Trace.WriteLine(lines[index]);
-                }
+                Trace.WriteLineIf(debug > 2, lines[index]);
                 if (reBedingung.IsMatch(lines[index]))
                 {
                     Match m = reBedingung.Match(lines[index]);
-                    Trace.WriteLine(m.Groups["Kauf"].Value, "TEST");
+                    Trace.WriteLine(
+                        "Datum:" + Datum
+                        + "\tWert:" + m.Groups["Wert"].Value
+                        + "\tKaufwert : " + m.Groups["Kauf"].Value
+                        + "\tGewinn : " + m.Groups["Gewinn"].Value
+                        );
+                        tw.WriteLine(file + ';'
+                            + Datum + ';'
+                            + m.Groups["Wert"].Value + ';'
+                            + m.Groups["Kauf"].Value + ';'
+                            + m.Groups["Gewinn"].Value + ';'
+                            );
+
+                }
+                if (reDatum.IsMatch(lines[index]))
+                {
+                    Match m = reDatum.Match(lines[index]);
+                    Datum = m.Groups["Datum"].Value;
                 }
             }
         }

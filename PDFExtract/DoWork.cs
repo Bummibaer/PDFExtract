@@ -204,7 +204,8 @@ namespace PDFExtract
 
             tw.WriteLine("File;Datum;Sonder;Art;Geschäftsnummer;Geschäftstag;WPKNR;Name;ISIN;Test1;Test2;Rest");
 
-            string dir = @"F:\Benutzer\PapaNetz\Dokumente\comdirect\";
+            string dir = @"P:\privat\comdirect\";
+            //string dir = @"F:\Benutzer\PapaNetz\Dokumente\comdirect\";
             Trace.WriteLine("Work on : " + dir + "Wertpapierabrechnung_*.pdf" +
                 "\t" + Directory.Exists(dir));
 
@@ -227,7 +228,7 @@ namespace PDFExtract
                 if (text == "") continue;
                 dw.ParseText(text);
             }
-            dw.Close();
+            tw.Close();
         }
 
         private void Close()

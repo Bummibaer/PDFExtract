@@ -57,7 +57,8 @@ namespace PDFExtract
                     {
 
                         //Trace.WriteLine(filename + "\tspacing = " + spacing + "\tlinespacing = " + linespacing, "PDF");
-                        ITextExtractionStrategy tes = new snSimpleTextExtractionStrategy(linespacing, spacing);
+                        ITextExtractionStrategy tes = new LocationTextExtractionStrategy();
+                        //ITextExtractionStrategy tes = new snSimpleTextExtractionStrategy(linespacing, spacing);
                         if (pages != 0)
                         {
                             text = PdfTextExtractor.GetTextFromPage(pr, 1, tes);
