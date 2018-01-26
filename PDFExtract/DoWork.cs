@@ -45,9 +45,11 @@ namespace PDFExtract
         public List<sResult> Results = new List<sResult>();
 
         public int debug { get; set; }
+
+        List<string> lColumns = new List<string>();
         Dictionary<string, string> dStock = new Dictionary<string, string>();
         List<Dictionary<string, string>> lStocks = new List<Dictionary<string, string>>();
-       
+
         TextWriter tw;
 
         public DoWork()
@@ -55,38 +57,46 @@ namespace PDFExtract
             // Regexes für Tabelle
             //
             template = new Template();
+
             tw = File.CreateText("test.csv");
+
+            lColumns.Add("Fonds");
         }
 
         bool first = true;
-
-        
         /// <summary>
         /// Parse text from PDF for 
         /// </summary>
         /// <param name="text"></param>
         public void ParseText(string text)
         {
+
             string[] newline = { "\n" };
 
             Regex reBedingung = new Regex(@"Wertpapier-Bezeichnung\s+WPKNR/ISIN");
-            Regex reLast = new Regex(@"Zu Ihren Lasten");
-            Regex reLasten = new Regex(@"(\w{3})\s+(-*[.\d]+,[.\d]+-*)");
+            Regex reValuta = new Regex(@"IBAN\s+Valuta\s+Zu\s+Ihren\s+(\w+)");
+            Regex reLasten = new Regex(@"(?<Valuta>\d+\.\d+\.\d+)\s+(?<Summe>\w{3}\s+-*[.\d]+,[.\d]+-*)");
             Regex reTest = new Regex(@"(.+)(?! {2,}) (.+)");
+
+            MatchCollection mc;
             dStock = new Dictionary<string, string>();
 
             string[] lines = text.Split(newline, StringSplitOptions.None);
             int textIndex = 0;
             for (int index = 0; index < lines.Length; index++)
             {
-                Trace.WriteLineIf(debug > 1, index.ToString("D3") + ":" + lines[index], "TEST");
+                //if (index == 38)
+                //{
+                //    Trace.WriteLine("");
+                //}
+                Trace.WriteLineIf(debug > 1, index.ToString("D3") + "\t: L=" + lines[index].Length + "\t<" + lines[index] + '>', "TEST");
                 //## Next Line, how to template ?
                 if (reBedingung.IsMatch(lines[index]))
                 {
-                    Trace.WriteLineIf(debug > 0, "Found:" + lines[index++], "TEST");
-                    // hint
-                    Trace.WriteLineIf(debug > 0, "\t" + lines[index], "TEST");
-                    MatchCollection mc = reTest.Matches(lines[index++]);
+                    Trace.WriteLineIf(debug > 0, "Found:" + lines[index], "TEST");
+                    // Goto Next Line
+                    GetNextLine(newline, lines, ref textIndex, ref index);
+                    mc = reTest.Matches(lines[index]);
 
                     if (mc.Count == 1)
                     {
@@ -95,40 +105,48 @@ namespace PDFExtract
                     }
                     else if (mc.Count == 0)
                     {
-                        Trace.WriteLine("10.:" + lines[index++], "TEST");
+                        Trace.WriteLine("10.:" + lines[index], "ERROR");
                         throw new Exception("Fehler");
                     }
 
-                    Trace.WriteLineIf(debug > 0, "\t" + lines[index], "TEST");
-                    mc = reTest.Matches(lines[index++]);
+                    GetNextLine(newline, lines, ref textIndex, ref index);
+                    mc = reTest.Matches(lines[index]);
 
                     if (mc.Count == 1)
                     {
+                        dStock["Fonds"] += ' ' + mc[0].Groups[1].Value.Trim();
                         writeValues(mc[0].Groups[2].Index + textIndex, mc[0].Groups[2].Length, "ISIN", mc[0].Groups[2].Value.Trim());
-                        writeValues(mc[0].Groups[1].Index + textIndex, mc[0].Groups[1].Length, "Name", mc[0].Groups[1].Value.Trim());
                     }
                     else if (mc.Count == 0)
                     {
-                        Trace.WriteLine("10.:" + lines[index], "TEST");
+                        Trace.WriteLine("10.:" + lines[index], "ERROR");
                         throw new Exception("Fehler");
                     }
-                    continue;
                 }
-
-                else if (reLast.IsMatch(lines[index]))
+                else if (reValuta.IsMatch(lines[index]))
                 {
-                    index++;
-                    Trace.WriteLineIf(debug > 0, "Found:" + lines[index], "TEST");
+                    GetNextLine(newline, lines, ref textIndex, ref index);
+
                     if (reLasten.IsMatch(lines[index]))
                     {
-                        MatchCollection mc = reLasten.Matches(lines[index]);
-                        writeValues(mc[0].Groups[1].Index + textIndex, mc[0].Groups[1].Length, "DebitCurrency", mc[0].Groups[1].Value.Trim());
-                        writeValues(mc[0].Groups[2].Index + textIndex, mc[0].Groups[2].Length, "DebitValue", mc[0].Groups[2].Value.Trim());
+                        mc = reLasten.Matches(lines[index]);
+                        foreach (string gname in reLasten.GetGroupNames())
+                        {
+                            if (gname != "0")
+                            {
+                                Trace.WriteLineIf(debug > 0 ,
+                                    gname + '\t'
+                                    + mc[0].Groups[gname].Index + '\t'
+                                    + mc[0].Groups[gname].Value, "TEST");
+                                writeValues(mc[0].Groups[gname].Index, mc[0].Groups[gname].Length, gname, mc[0].Groups[gname].Value);
+                            }
+
+                        }
                     }
                     else
                     {
                         Trace.WriteLine("Was:" + lines[index], "TEST");
-                        Trace.WriteLine("Wrong Lasten : " + lines[index]);
+                        Trace.WriteLine("Wrong Lasten : " + reLasten.ToString());
                     }
                 }
                 else foreach (Template.sRule re in template.LRules)
@@ -159,12 +177,11 @@ namespace PDFExtract
 
                     }
                 textIndex += (lines[index].Length + newline.Length);
-
             } // foreach line
             lStocks.Add(dStock);
             if (first)
             {
-                foreach (string name in dStock.Keys)
+                foreach (string name in lColumns)
                 {
                     Trace.Write(name + "\t;");
                     tw.Write(name + ";");
@@ -173,43 +190,62 @@ namespace PDFExtract
                 tw.WriteLine("");
                 first = false;
             }
+            foreach (string name in lColumns)
+            {
+                if (dStock.ContainsKey(name))
+                {
+                    tw.Write(dStock[name] + ';');
+                }
+                else
+                {
+                    tw.Write("-;");
+                }
 
-            Trace.WriteLineIf(debug> 0 ,Environment.NewLine + sbLine);
-            tw.WriteLine(sbLine);
-            sbLine = new StringBuilder();
+            }
+            tw.WriteLine("");
             tw.Flush();
         }
 
-        private StringBuilder sbLine = new StringBuilder();
+        private void GetNextLine(string[] newline, string[] lines, ref int textIndex, ref int index)
+        {
+            textIndex += (lines[index].Length + newline.Length);
+            index++;
+            Trace.WriteLineIf(debug > 0, "Found:" + lines[index], "TEST");
+        }
 
         private void writeValues(int index, int length, string name, string value)
         {
             dStock[name] = value;
-            sbLine.Append(value + ";");
 
+            if (!lColumns.Contains(name))
+            {
+                lColumns.Add(name);
+                Trace.WriteLine(name + '\t' + value, "New Property");
+            }
             sResult r = new sResult(index, value.Length, name, value);
             Results.Add(r);
 
-            Trace.WriteLineIf(debug>1 , name + ":" + value, "VALUES");
 
         }
+
+        // static string dir = @"F:\Benutzer\PapaNetz\Dokumente\comdirect\";
+        static string dir = @"P:\privat\comdirect\";
         public static void TestDoWork()
         {
             ExtractPDF ep = new ExtractPDF();
             DoWork dw = new DoWork();
-            TextWriter tw = File.CreateText("ertrag.csv");
             char[] c = new char[] { '|', '\\', '-', '/' };
             int cindex = 0;
             int debug = 0;
 
-            tw.WriteLine("File;Datum;Sonder;Art;Geschäftsnummer;Geschäftstag;WPKNR;Name;ISIN;Test1;Test2;Rest");
+            Trace.WriteLine("Work on : "
+                + dir
+                + "Wertpapierabrechnung_*.pdf"
+                + "\t"
+                + Directory.Exists(dir)
+                );
 
-            //string dir = @"P:\privat\comdirect\";
-            string dir = @"F:\Benutzer\PapaNetz\Dokumente\comdirect\";
-            Trace.WriteLine("Work on : " + dir + "Wertpapierabrechnung_*.pdf" +
-                "\t" + Directory.Exists(dir));
-
-
+            int line = 0;
             foreach (string filename in Directory.EnumerateFiles(dir, "Wertpapierabrechnung_*.pdf"))
             {
                 if (debug == 0)
@@ -219,16 +255,35 @@ namespace PDFExtract
                     {
                         cindex = 0;
                     }
+                    if (line++ == 64)
+                    {
+                        Trace.WriteLine("");
+                        line = 0;
+                    }
                 }
                 else
                 {
                     Trace.WriteLine("Read : " + filename);
                 }
                 string text = ep.getText(filename,1);
-                if (text == "") continue;
+                //if (filename.Contains("NORDEA"))
+                //{
+                //    dw.debug = 3;
+                //}
                 dw.ParseText(text);
             }
-            tw.Close();
+            dw.Close();
+        }
+        public static void TestDoWork(string filename)
+        {
+            ExtractPDF ep = new ExtractPDF();
+            DoWork dw = new DoWork();
+
+            string text = ep.getText(dir + filename,1);
+            dw.debug = 3;
+
+            dw.ParseText(text);
+            dw.Close();
         }
 
         private void Close()
