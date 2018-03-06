@@ -60,7 +60,7 @@ namespace PDFExtract
         private void ParseText(string file, string text)
         {
             string[] newline = { "\n" };
-
+            Trace.Write(file + '\t');
             // Gesamtbestand 2.193,14 6.156,94 -3.963,80
             Regex reBedingung = new Regex(
                 @"^\s*Gesamt\w+\s+(?<Wert>[+-]*[\d.]+,\d+[+-]*)\s+(?<Kauf>[+-]*[\d.]+,\d+[+-]*)\s+(?<Gewinn>[+-]*[\d.]+,\d+[+-]*)");
@@ -71,13 +71,30 @@ namespace PDFExtract
 
             string[] lines = text.Split(newline, StringSplitOptions.None);
 
+            // if (file.IndexOf("12_vom_01.12.2003") > 0) debug = 3;
 
             for (int index = 0; index < lines.Length; index++)
             {
+                if ( (debug > 2 ) && ( lines[index].IndexOf("Finanzreport Nr.") >= 0 ) ){
+                    Trace.WriteLine("");
+                }
                 Trace.WriteLineIf(debug > 2, lines[index]);
                 if (reBedingung.IsMatch(lines[index]))
                 {
                     Match m = reBedingung.Match(lines[index]);
+                    if ( Datum == "Unknown")
+                    {
+                        Regex re = new Regex(@"_(?<Datum>\d{2}\.\d{2}\.\d{4})");
+                        Match mr = re.Match(file);
+                        if ( mr.Length > 0)
+                        {
+                            Datum = mr.Groups["Datum"].Value;
+                        }
+                        else
+                        {
+                            Datum = "Not Known";
+                        }
+                    }
                     Trace.WriteLine(
                         "Datum:" + Datum
                         + "\tWert:" + m.Groups["Wert"].Value
