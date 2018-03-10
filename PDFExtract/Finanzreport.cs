@@ -14,11 +14,21 @@ namespace PDFExtract
 
         int debug { get; set; }
 
+        Dictionary<string, int> dFiles = new Dictionary<string, int>();
+
+        TextWriter tw = File.CreateText("ertrag.csv");
+
+        struct sLine
+        {
+            public string filename, datum, kauf, wert, gewinn;
+        };
+
+
         public Finanzreport()
         {
             debug = 0;
         }
-        TextWriter tw = File.CreateText("ertrag.csv");
+
         public void TestDoWork()
         {
             ExtractPDF ep = new ExtractPDF();
@@ -28,12 +38,12 @@ namespace PDFExtract
 
             tw.WriteLine("File;Datum;Wert;Kaufwert;Gewinn");
 
-            //string dir = @"F:\Benutzer\PapaNetz\Dokumente\comdirect\";
-            string dir = @"P:\privat\comdirect\";
+            string dir = @"F:\Benutzer\PapaNetz\Dokumente\comdirect\";
+            //string dir = @"P:\privat\comdirect\";
             string files = dir + "Finanzreport_ *.pdf";
             Trace.WriteLine("Work on : " + files + "\t" + Directory.Exists(dir));
 
-
+            
             foreach (string filename in Directory.EnumerateFiles(dir, "Finanzreport_*.pdf"))
             {
                 if (debug == 0)
@@ -48,6 +58,12 @@ namespace PDFExtract
                 {
                     Trace.WriteLine("Read : " + filename);
                 }
+                if (dFiles.ContainsKey(filename))
+                {
+                    Trace.WriteLine("Why!");
+                }
+                dFiles.Add(filename, 1);
+
                 string text = ep.getText(filename, 0);
                 if (text == "") continue;
                 ParseText(filename, text);
@@ -67,7 +83,7 @@ namespace PDFExtract
             Regex reDatum = new Regex(
                 @"Finanzreport Nr. \d+ per (?<Datum>\d+.\d+.\d+)\s*$");
 
-            string Datum = "Unknown";
+            sLine line = new sLine();
 
             string[] lines = text.Split(newline, StringSplitOptions.None);
 
@@ -75,46 +91,54 @@ namespace PDFExtract
 
             for (int index = 0; index < lines.Length; index++)
             {
-                if ( (debug > 2 ) && ( lines[index].IndexOf("Finanzreport Nr.") >= 0 ) ){
+                if ((debug > 2) && (lines[index].IndexOf("Finanzreport Nr.") >= 0))
+                {
                     Trace.WriteLine("");
                 }
                 Trace.WriteLineIf(debug > 2, lines[index]);
                 if (reBedingung.IsMatch(lines[index]))
                 {
                     Match m = reBedingung.Match(lines[index]);
-                    if ( Datum == "Unknown")
+                    line.filename = file;
+                    line.kauf = m.Groups["Kauf"].Value;
+                    line.wert = m.Groups["Wert"].Value;
+                    line.gewinn = m.Groups["Gewinn"].Value;
+
+                    if (line.datum == null)
                     {
                         Regex re = new Regex(@"_(?<Datum>\d{2}\.\d{2}\.\d{4})");
                         Match mr = re.Match(file);
-                        if ( mr.Length > 0)
+                        if (mr.Length > 0)
                         {
-                            Datum = mr.Groups["Datum"].Value;
+                            line.datum = mr.Groups["Datum"].Value;
                         }
                         else
                         {
-                            Datum = "Not Known";
+                            line.datum  = "Not Known";
                         }
                     }
-                    Trace.WriteLine(
-                        "Datum:" + Datum
-                        + "\tWert:" + m.Groups["Wert"].Value
-                        + "\tKaufwert : " + m.Groups["Kauf"].Value
-                        + "\tGewinn : " + m.Groups["Gewinn"].Value
-                        );
-                        tw.WriteLine(file + ';'
-                            + Datum + ';'
-                            + m.Groups["Wert"].Value + ';'
-                            + m.Groups["Kauf"].Value + ';'
-                            + m.Groups["Gewinn"].Value + ';'
-                            );
 
                 }
                 if (reDatum.IsMatch(lines[index]))
                 {
                     Match m = reDatum.Match(lines[index]);
-                    Datum = m.Groups["Datum"].Value;
+                    line.datum = m.Groups["Datum"].Value;
                 }
             }
+
+            Trace.WriteLine(
+               "Datum:" + line.datum
+               + "\tWert:" + line.wert
+               + "\tKaufwert : " + line.kauf
+               + "\tGewinn : " + line.gewinn
+               );
+            tw.WriteLine(file + ';'
+                + line.datum + ';'
+                + line.wert + ';'
+                + line.kauf + ';'
+                + line.gewinn+ ';'
+                );
+
         }
     }
 }
